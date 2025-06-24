@@ -1,0 +1,32 @@
+{
+  "name": "bibliotheque-graphql",
+  "version": "1.0.0",
+  "description": "Application de gestion de bibliothèque avec GraphQL",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js",
+    "init-db": "node src/database/init.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "apollo-server-express": "^3.12.1",
+    "graphql": "^16.8.1",
+    "sqlite3": "^5.1.6",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "graphql",
+    "bibliotheque",
+    "express",
+    "sqlite"
+  ],
+  "author": "Votre Nom",
+  "license": "MIT"
+} 

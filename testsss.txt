@@ -1,0 +1,5 @@
+Action	Commande à utiliser
+Démarrer	npm start
+Démarrer (dev)	npm run dev
+Arrêter	Ctrl + C dans le terminal
+Forcer arrêt	taskkill /f /im node.exe (Win)

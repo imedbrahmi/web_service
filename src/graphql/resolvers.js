@@ -172,12 +172,12 @@ const resolvers = {
 
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
       const { password_hash, ...userWithoutPassword } = user;
-      
+      userWithoutPassword.role = user.role;
       return { token, user: userWithoutPassword };
     },
 
     // Emprunts
-    borrowBook: async (_, { userId, bookId }) => {
+    borrowBook: async (_, { userId, bookId, loanDate, dueDate }) => {
       // Vérifier si le livre est disponible
       const book = await get('SELECT * FROM books WHERE id = ?', [bookId]);
       if (!book) {
@@ -187,14 +187,14 @@ const resolvers = {
         throw new Error('Aucune copie disponible');
       }
 
-      // Calculer la date de retour (14 jours)
-      const dueDate = new Date();
-      dueDate.setDate(dueDate.getDate() + 14);
+      // Déterminer les dates
+      let loanDateObj = loanDate ? new Date(loanDate) : new Date();
+      let dueDateObj = dueDate ? new Date(dueDate) : new Date(loanDateObj.getTime() + 14 * 24 * 60 * 60 * 1000);
 
       // Créer l'emprunt
       const result = await run(
-        'INSERT INTO loans (user_id, book_id, due_date) VALUES (?, ?, ?)',
-        [userId, bookId, dueDate.toISOString()]
+        'INSERT INTO loans (user_id, book_id, loan_date, due_date) VALUES (?, ?, ?, ?)',
+        [userId, bookId, loanDateObj.toISOString(), dueDateObj.toISOString()]
       );
 
       // Mettre à jour le nombre de copies disponibles

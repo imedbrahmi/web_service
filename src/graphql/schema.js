@@ -116,7 +116,7 @@ const typeDefs = gql`
     login(input: LoginInput!): AuthPayload!
     
     # Emprunts
-    borrowBook(userId: ID!, bookId: ID!): Loan!
+    borrowBook(userId: ID!, bookId: ID!, loanDate: String, dueDate: String): Loan!
     returnBook(loanId: ID!): Loan!
   }
 `;

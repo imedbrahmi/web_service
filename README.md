@@ -1,305 +1,397 @@
-# 📚 Bibliothèque GraphQL
+# 📚 Système de Gestion de Bibliothèque - GraphQL
 
-Une application complète de gestion de bibliothèque utilisant **GraphQL** avec Node.js, Express et SQLite.
+## 🎯 Vue d'ensemble du projet
 
-## 🚀 Fonctionnalités
+Ce projet implémente un système complet de gestion de bibliothèque utilisant **GraphQL** comme API moderne, avec une architecture full-stack JavaScript. Le système permet la gestion des livres, auteurs, utilisateurs et emprunts avec une interface web intuitive.
 
-- ✅ **Gestion des auteurs** : Ajout, modification, suppression
-- ✅ **Gestion des livres** : Catalogue complet avec ISBN, genre, description
-- ✅ **Système d'emprunts** : Emprunt et retour de livres avec dates
-- ✅ **Authentification** : Inscription et connexion sécurisées
-- ✅ **Recherche** : Recherche de livres par titre ou auteur
-- ✅ **Interface GraphQL** : Playground interactif pour tester l'API
-- ✅ **Base de données SQLite** : Simple et portable
+## 🏗️ Architecture technique
 
-## 🛠️ Technologies utilisées
+### Stack technologique
+- **Backend** : Node.js + Express + Apollo Server
+- **Base de données** : SQLite avec SQLite3
+- **API** : GraphQL (Apollo Server)
+- **Frontend** : HTML5 + CSS3 + JavaScript vanilla
+- **Authentification** : JWT (JSON Web Tokens)
+- **Sécurité** : bcrypt pour le hachage des mots de passe
 
-- **Backend** : Node.js, Express
-- **API** : GraphQL avec Apollo Server
-- **Base de données** : SQLite
-- **Authentification** : JWT + bcrypt
-- **Sécurité** : Helmet, CORS
-
-## 📦 Installation
-
-1. **Cloner le projet**
-```bash
-git clone <votre-repo>
-cd webservice
-```
-
-2. **Installer les dépendances**
-```bash
-npm install
-```
-
-3. **Initialiser la base de données**
-```bash
-npm run init-db
-```
-
-4. **Démarrer le serveur**
-```bash
-npm start
-```
-
-Pour le développement avec rechargement automatique :
-```bash
-npm run dev
-```
-
-## 🌐 Accès à l'application
-
-- **Interface principale** : http://localhost:4000
-- **GraphQL Playground** : http://localhost:4000/graphql
-- **Documentation API** : http://localhost:4000/api
-
-## 📊 Données de test
-
-L'application est livrée avec des données de test :
-
-### 👥 Utilisateurs
-- **Admin** : admin@bibliotheque.com / password123
-- **John** : john@example.com / password123
-- **Jane** : jane@example.com / password123
-
-### 📚 Livres inclus
-- Harry Potter à l'école des sorciers
-- Harry Potter et la Chambre des secrets
-- Le Trône de fer
-- Ça (Stephen King)
-- Le Crime de l'Orient-Express
-
-### ✍️ Auteurs
-- J.K. Rowling
-- George R.R. Martin
-- Stephen King
-- Agatha Christie
-
-## 🔧 Utilisation de l'API GraphQL
-
-### Exemples de requêtes
-
-#### Récupérer tous les livres
-```graphql
-query {
-  books {
-    id
-    title
-    isbn
-    author {
-      name
-    }
-    available_copies
-    genre
-  }
-}
-```
-
-#### Rechercher des livres
-```graphql
-query {
-  searchBooks(query: "Harry Potter") {
-    id
-    title
-    author {
-      name
-    }
-    available_copies
-  }
-}
-```
-
-#### Récupérer les emprunts actifs
-```graphql
-query {
-  activeLoans {
-    id
-    user {
-      username
-    }
-    book {
-      title
-    }
-    loan_date
-    due_date
-  }
-}
-```
-
-### Exemples de mutations
-
-#### Créer un auteur
-```graphql
-mutation {
-  createAuthor(input: {
-    name: "Victor Hugo"
-    biography: "Auteur français du 19ème siècle"
-    birth_date: "1802-02-26"
-  }) {
-    id
-    name
-  }
-}
-```
-
-#### Créer un livre
-```graphql
-mutation {
-  createBook(input: {
-    title: "Les Misérables"
-    isbn: "9782070413111"
-    author_id: 5
-    publication_year: 1862
-    genre: "Roman"
-    description: "Un chef-d'œuvre de la littérature française"
-    total_copies: 2
-  }) {
-    id
-    title
-    available_copies
-  }
-}
-```
-
-#### Emprunter un livre
-```graphql
-mutation {
-  borrowBook(userId: "2", bookId: "1") {
-    id
-    book {
-      title
-    }
-    due_date
-  }
-}
-```
-
-#### Retourner un livre
-```graphql
-mutation {
-  returnBook(loanId: "1") {
-    id
-    return_date
-    status
-  }
-}
-```
-
-#### S'inscrire
-```graphql
-mutation {
-  register(input: {
-    username: "nouveau_utilisateur"
-    email: "nouveau@example.com"
-    password: "motdepasse123"
-  }) {
-    token
-    user {
-      id
-      username
-    }
-  }
-}
-```
-
-#### Se connecter
-```graphql
-mutation {
-  login(input: {
-    email: "john@example.com"
-    password: "password123"
-  }) {
-    token
-    user {
-      id
-      username
-    }
-  }
-}
-```
-
-## 🏗️ Structure du projet
-
+### Structure du projet
 ```
 webservice/
 ├── src/
+│   ├── server.js          # Serveur Express + Apollo
 │   ├── database/
-│   │   ├── db.js          # Configuration base de données
-│   │   └── init.js        # Script d'initialisation
-│   ├── graphql/
-│   │   ├── schema.js      # Schéma GraphQL
-│   │   └── resolvers.js   # Resolvers GraphQL
-│   └── server.js          # Serveur principal
-├── database/
-│   └── bibliotheque.db    # Base de données SQLite
-├── package.json
-└── README.md
+│   │   ├── db.js          # Configuration SQLite
+│   │   └── init.js        # Initialisation DB + données de test
+│   └── graphql/
+│       ├── schema.js      # Schéma GraphQL
+│       └── resolvers.js   # Résolveurs GraphQL
+├── public/
+│   ├── index.html         # Interface utilisateur
+│   ├── app.js            # Logique frontend
+│   └── styles.css        # Styles CSS
+└── database/
+    └── bibliotheque.db   # Base de données SQLite
 ```
 
-## 🔒 Sécurité
+## 🔧 Installation et démarrage
 
-- **Mots de passe** : Hashés avec bcrypt
-- **JWT** : Tokens d'authentification sécurisés
-- **CORS** : Configuration sécurisée
-- **Helmet** : Headers de sécurité HTTP
+### Prérequis
+- Node.js (version 14 ou supérieure)
+- npm
 
-## 🚀 Déploiement
-
-### Variables d'environnement
-Créez un fichier `.env` à la racine :
-```env
-PORT=4000
-JWT_SECRET=votre-secret-jwt-super-securise
-```
-
-### Production
+### Installation
 ```bash
-npm install --production
+# Cloner le projet
+git clone [url-du-repo]
+
+# Installer les dépendances
+npm install
+
+# Démarrer le serveur
 npm start
 ```
 
-## 📝 API Endpoints
+### Accès
+- **Interface web** : http://localhost:4000
+- **GraphQL Playground** : http://localhost:4000/graphql
+- **Base de données** : `database/bibliotheque.db`
 
-### GraphQL
-- **POST** `/graphql` - Endpoint GraphQL principal
-- **GET** `/graphql` - GraphQL Playground
+## 📊 Schéma GraphQL
 
-### REST (Pages)
-- **GET** `/` - Page d'accueil
-- **GET** `/api` - Documentation API
+### Types principaux
 
-## 🤝 Contribution
+#### Book (Livre)
+```graphql
+type Book {
+  id: ID!
+  title: String!
+  isbn: String
+  publication_year: Int
+  genre: String
+  description: String
+  total_copies: Int!
+  available_copies: Int!
+  author: Author
+  created_at: String!
+}
+```
 
-1. Fork le projet
-2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
-3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
-4. Push vers la branche (`git push origin feature/AmazingFeature`)
-5. Ouvrir une Pull Request
+#### Author (Auteur)
+```graphql
+type Author {
+  id: ID!
+  name: String!
+  biography: String
+  birth_date: String
+  created_at: String!
+}
+```
 
-## 📄 Licence
+#### User (Utilisateur)
+```graphql
+type User {
+  id: ID!
+  username: String!
+  email: String!
+  role: UserRole!
+  created_at: String!
+}
+```
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+#### Loan (Emprunt)
+```graphql
+type Loan {
+  id: ID!
+  user: User!
+  book: Book!
+  loan_date: String!
+  due_date: String
+  return_date: String
+  status: LoanStatus!
+}
+```
 
-## 🆘 Support
+### Mutations principales
 
-Si vous rencontrez des problèmes :
+#### Authentification
+```graphql
+mutation Register($input: UserInput!) {
+  register(input: $input) {
+    token
+    user { id username email role }
+  }
+}
 
-1. Vérifiez que toutes les dépendances sont installées
-2. Assurez-vous que le port 4000 est disponible
-3. Vérifiez les logs du serveur pour les erreurs
-4. Consultez la documentation GraphQL dans `/graphql`
+mutation Login($input: LoginInput!) {
+  login(input: $input) {
+    token
+    user { id username email role }
+  }
+}
+```
 
-## 🎯 Fonctionnalités futures
+#### Gestion des livres
+```graphql
+mutation CreateBook($input: BookInput!) {
+  createBook(input: $input) {
+    id title author { name }
+  }
+}
 
-- [ ] Interface utilisateur React/Vue.js
-- [ ] Notifications par email
-- [ ] Système de réservation
-- [ ] Gestion des amendes
-- [ ] Statistiques d'utilisation
-- [ ] Export de données
-- [ ] API REST en complément
+mutation UpdateBook($id: ID!, $input: BookInput!) {
+  updateBook(id: $id, input: $input) {
+    id title
+  }
+}
+
+mutation DeleteBook($id: ID!) {
+  deleteBook(id: $id)
+}
+```
+
+#### Gestion des emprunts
+```graphql
+mutation BorrowBook($userId: ID!, $bookId: ID!, $loanDate: String, $dueDate: String) {
+  borrowBook(userId: $userId, bookId: $bookId, loanDate: $loanDate, dueDate: $dueDate) {
+    id book { title } loan_date due_date
+  }
+}
+
+mutation ReturnBook($loanId: ID!) {
+  returnBook(loanId: $loanId) {
+    id return_date status
+  }
+}
+```
+
+## 🔐 Système d'authentification
+
+### Rôles utilisateurs
+- **Admin** : Accès complet (CRUD livres/auteurs, gestion emprunts)
+- **User** : Emprunt/retour de livres, consultation catalogue
+
+### Sécurité
+- **JWT** pour l'authentification des sessions
+- **bcrypt** pour le hachage sécurisé des mots de passe
+- **Middleware d'authentification** pour protéger les routes sensibles
+- **Validation des tokens** côté client et serveur
+
+### Persistance de session
+- Stockage du token JWT dans localStorage
+- Validation automatique au chargement de la page
+- Restauration de session après rafraîchissement
+
+## 🎨 Interface utilisateur
+
+### Fonctionnalités principales
+
+#### Page d'accueil
+- Statistiques globales (admin uniquement)
+- Navigation intuitive
+- Affichage du statut de connexion
+
+#### Catalogue de livres
+- Liste complète des livres avec filtres
+- Recherche par titre/auteur
+- Affichage de la disponibilité en temps réel
+- Boutons d'action contextuels selon le rôle
+
+#### Gestion des auteurs
+- Liste des auteurs avec biographies
+- CRUD complet pour les administrateurs
+- Interface modale pour ajout/modification
+
+#### Gestion des emprunts
+- Vue personnalisée selon le rôle
+- Historique des emprunts
+- Actions de retour pour les utilisateurs
+- Gestion complète pour les administrateurs
+
+### Responsive Design
+- Interface adaptative (desktop/mobile)
+- Modals pour les actions importantes
+- Notifications en temps réel
+- Navigation fluide entre les sections
+
+## 🗄️ Base de données
+
+### Tables principales
+```sql
+-- Livres
+CREATE TABLE books (
+  id INTEGER PRIMARY KEY,
+  title TEXT NOT NULL,
+  isbn TEXT,
+  publication_year INTEGER,
+  genre TEXT,
+  description TEXT,
+  total_copies INTEGER NOT NULL DEFAULT 1,
+  author_id INTEGER,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Auteurs
+CREATE TABLE authors (
+  id INTEGER PRIMARY KEY,
+  name TEXT NOT NULL,
+  biography TEXT,
+  birth_date DATE,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Utilisateurs
+CREATE TABLE users (
+  id INTEGER PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'user',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Emprunts
+CREATE TABLE loans (
+  id INTEGER PRIMARY KEY,
+  user_id INTEGER NOT NULL,
+  book_id INTEGER NOT NULL,
+  loan_date DATE NOT NULL,
+  due_date DATE,
+  return_date DATE,
+  status TEXT NOT NULL DEFAULT 'active'
+);
+```
+
+### Données de test
+Le système inclut des données de test pour :
+- 5 livres populaires
+- 3 auteurs reconnus
+- 2 utilisateurs (admin + user)
+- Emprunts d'exemple
+
+## 🔄 Fonctionnalités avancées
+
+### Gestion des emprunts
+- **Vérification de disponibilité** en temps réel
+- **Calcul automatique** des dates de retour
+- **Prévention des emprunts multiples** du même livre
+- **Interface intuitive** avec confirmation modale
+
+### Recherche et filtrage
+- **Recherche textuelle** dans les titres et auteurs
+- **Filtrage par disponibilité**
+- **Tri dynamique** des résultats
+
+### Notifications système
+- **Messages de succès/erreur** en temps réel
+- **Validation des formulaires**
+- **Feedback utilisateur** pour toutes les actions
+
+## 🚀 Points forts du projet
+
+### 1. Architecture GraphQL moderne
+- **API unifiée** pour toutes les opérations
+- **Requêtes optimisées** avec sélection de champs
+- **Introspection** pour la documentation automatique
+- **Playground GraphQL** intégré pour les tests
+
+### 2. Sécurité robuste
+- **Authentification JWT** sécurisée
+- **Hachage bcrypt** des mots de passe
+- **Validation des données** côté serveur
+- **Protection CSRF** via tokens
+
+### 3. Interface utilisateur intuitive
+- **Design responsive** moderne
+- **Navigation fluide** entre les sections
+- **Modals contextuels** pour les actions importantes
+- **Feedback visuel** pour toutes les interactions
+
+### 4. Gestion d'état avancée
+- **Persistance de session** après rafraîchissement
+- **Synchronisation** entre les vues
+- **Mise à jour en temps réel** des données
+- **Gestion des erreurs** robuste
+
+## 🧪 Tests et validation
+
+### Tests manuels effectués
+- ✅ Création/modification/suppression de livres
+- ✅ Gestion des auteurs (CRUD)
+- ✅ Système d'authentification (inscription/connexion)
+- ✅ Emprunt et retour de livres
+- ✅ Gestion des rôles (admin/user)
+- ✅ Recherche et filtrage
+- ✅ Interface responsive
+- ✅ Persistance de session
+
+### Validation des fonctionnalités
+- **Emprunts multiples** : Prévention des doublons
+- **Disponibilité** : Mise à jour en temps réel
+- **Sécurité** : Protection des routes sensibles
+- **Performance** : Requêtes GraphQL optimisées
+
+## 📈 Améliorations possibles
+
+### Fonctionnalités futures
+- **Système de réservation** pour les livres indisponibles
+- **Notifications par email** pour les retards
+- **Statistiques avancées** et rapports
+- **API REST** en complément de GraphQL
+- **Tests automatisés** avec Jest
+- **Dockerisation** pour le déploiement
+
+### Optimisations techniques
+- **Pagination** pour les grandes listes
+- **Cache Redis** pour les requêtes fréquentes
+- **Upload d'images** pour les livres
+- **Export PDF** des emprunts
+- **Logs système** avancés
+
+## 🎓 Réponses aux questions fréquentes
+
+### Q: Pourquoi GraphQL plutôt que REST ?
+**R:** GraphQL offre une API plus flexible avec :
+- Requêtes optimisées (pas de sur-fetching)
+- Schéma fortement typé
+- Documentation automatique
+- Évolution plus facile de l'API
+
+### Q: Comment gérez-vous la sécurité ?
+**R:** Multiples niveaux de sécurité :
+- JWT pour l'authentification
+- bcrypt pour le hachage des mots de passe
+- Validation des données côté serveur
+- Middleware d'authentification
+
+### Q: Comment fonctionne la gestion des emprunts ?
+**R:** Système complet avec :
+- Vérification de disponibilité en temps réel
+- Prévention des emprunts multiples
+- Calcul automatique des dates de retour
+- Interface utilisateur intuitive
+
+### Q: Quelle est l'architecture de la base de données ?
+**R:** SQLite avec relations normalisées :
+- Tables séparées pour livres, auteurs, utilisateurs, emprunts
+- Clés étrangères pour les relations
+- Index pour optimiser les performances
+
+## 📞 Support et maintenance
+
+### Démarrage rapide
+```bash
+npm install
+npm start
+```
+
+### Accès aux interfaces
+- **Web** : http://localhost:4000
+- **GraphQL** : http://localhost:4000/graphql
+
+### Comptes de test
+- **Admin** : admin@test.com / password123
+- **User** : user@test.com / password123
 
 ---
 
-**Développé avec ❤️ pour l'apprentissage de GraphQL** 
+**Développé avec ❤️ pour le cours de Services Web - GraphQL** 

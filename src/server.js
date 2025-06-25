@@ -298,6 +298,130 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <div class="query">
+                <h3>Liste de tous les auteurs</h3>
+                <pre><code>query {
+  authors {
+    id
+    name
+    biography
+    birth_date
+    created_at
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Détail d'un auteur</h3>
+                <pre><code>query {
+  author(id: 1) {
+    id
+    name
+    biography
+    birth_date
+    created_at
+    books {
+      id
+      title
+    }
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Détail d'un livre</h3>
+                <pre><code>query {
+  book(id: 1) {
+    id
+    title
+    isbn
+    author {
+      name
+    }
+    publication_year
+    genre
+    description
+    available_copies
+    total_copies
+    created_at
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Livres d'un auteur</h3>
+                <pre><code>query {
+  booksByAuthor(authorId: 1) {
+    id
+    title
+    genre
+    available_copies
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Liste de tous les utilisateurs</h3>
+                <pre><code>query {
+  users {
+    id
+    username
+    email
+    role
+    created_at
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Détail d'un utilisateur</h3>
+                <pre><code>query {
+  user(id: 1) {
+    id
+    username
+    email
+    role
+    created_at
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Liste de tous les emprunts</h3>
+                <pre><code>query {
+  loans {
+    id
+    loan_date
+    return_date
+    due_date
+    status
+    user { username }
+    book { title }
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Détail d'un emprunt</h3>
+                <pre><code>query {
+  loan(id: 1) {
+    id
+    loan_date
+    return_date
+    due_date
+    status
+    user { username }
+    book { title }
+  }
+}</code></pre>
+            </div>
+            <div class="query">
+                <h3>Emprunts d'un utilisateur</h3>
+                <pre><code>query {
+  userLoans(userId: 1) {
+    id
+    loan_date
+    return_date
+    due_date
+    status
+    book { title }
+  }
+}</code></pre>
+            </div>
+            
             <h2>✏️ Mutations disponibles</h2>
             
             <div class="mutation">
@@ -387,6 +511,49 @@ app.get('/api', (req, res) => {
       username
     }
   }
+}</code></pre>
+            </div>
+            
+            <div class="mutation">
+                <h3>Modifier un auteur</h3>
+                <pre><code>mutation {
+  updateAuthor(id: 1, input: {
+    name: "Nom modifié"
+    biography: "Nouvelle bio"
+    birth_date: "1980-01-01"
+  }) {
+    id
+    name
+    biography
+    birth_date
+  }
+}</code></pre>
+            </div>
+            <div class="mutation">
+                <h3>Supprimer un auteur</h3>
+                <pre><code>mutation {
+  deleteAuthor(id: 1)
+}</code></pre>
+            </div>
+            <div class="mutation">
+                <h3>Modifier un livre</h3>
+                <pre><code>mutation {
+  updateBook(id: 1, input: {
+    title: "Titre modifié"
+    genre: "Nouveau genre"
+    total_copies: 5
+  }) {
+    id
+    title
+    genre
+    total_copies
+  }
+}</code></pre>
+            </div>
+            <div class="mutation">
+                <h3>Supprimer un livre</h3>
+                <pre><code>mutation {
+  deleteBook(id: 1)
 }</code></pre>
             </div>
             

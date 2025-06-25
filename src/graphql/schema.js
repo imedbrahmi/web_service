@@ -73,9 +73,23 @@ const typeDefs = gql`
     password: String!
   }
 
+  input UserCreateInput {
+    username: String!
+    email: String!
+    password: String!
+    role: String = "user"
+  }
+
   input LoginInput {
     email: String!
     password: String!
+  }
+
+  input UserUpdateInput {
+    username: String
+    email: String
+    role: String
+    password: String
   }
 
   type Query {
@@ -114,6 +128,9 @@ const typeDefs = gql`
     # Utilisateurs
     register(input: UserInput!): AuthPayload!
     login(input: LoginInput!): AuthPayload!
+    createUser(input: UserCreateInput!): User!
+    updateUser(id: ID!, input: UserUpdateInput!): User!
+    deleteUser(id: ID!): Boolean!
     
     # Emprunts
     borrowBook(userId: ID!, bookId: ID!, loanDate: String, dueDate: String): Loan!

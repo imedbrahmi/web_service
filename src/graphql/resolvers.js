@@ -147,10 +147,15 @@ const resolvers = {
 
     // Utilisateurs
     register: async (_, { input }) => {
+      const existingUser = await get('SELECT * FROM users WHERE email = ?', [input.email]);
+      if (existingUser) {
+        throw new Error('Un utilisateur avec cet email existe déjà');
+      }
+
       const passwordHash = await bcrypt.hash(input.password, 10);
       const result = await run(
-        'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-        [input.username, input.email, passwordHash]
+        'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+        [input.username, input.email, passwordHash, 'user']
       );
       
       const user = await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.id]);
@@ -174,6 +179,81 @@ const resolvers = {
       const { password_hash, ...userWithoutPassword } = user;
       userWithoutPassword.role = user.role;
       return { token, user: userWithoutPassword };
+    },
+
+    createUser: async (_, { input }) => {
+      // Vérifier si l'email existe déjà
+      const existingUser = await get('SELECT * FROM users WHERE email = ?', [input.email]);
+      if (existingUser) {
+        throw new Error('Un utilisateur avec cet email existe déjà');
+      }
+
+      const passwordHash = await bcrypt.hash(input.password, 10);
+      const result = await run(
+        'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
+        [input.username, input.email, passwordHash, input.role || 'user']
+      );
+      
+      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.id]);
+    },
+
+    updateUser: async (_, { id, input }) => {
+      // Vérifier si l'utilisateur existe
+      const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
+      if (!existingUser) {
+        throw new Error('Utilisateur non trouvé');
+      }
+
+      // Préparer les champs à mettre à jour
+      const updates = [];
+      const values = [];
+
+      if (input.username) {
+        updates.push('username = ?');
+        values.push(input.username);
+      }
+
+      if (input.email) {
+        updates.push('email = ?');
+        values.push(input.email);
+      }
+
+      if (input.role) {
+        updates.push('role = ?');
+        values.push(input.role);
+      }
+
+      if (input.password) {
+        const passwordHash = await bcrypt.hash(input.password, 10);
+        updates.push('password_hash = ?');
+        values.push(passwordHash);
+      }
+
+      if (updates.length === 0) {
+        throw new Error('Aucun champ à mettre à jour');
+      }
+
+      values.push(id);
+      await run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
+
+      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
+    },
+
+    deleteUser: async (_, { id }) => {
+      // Vérifier si l'utilisateur existe
+      const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
+      if (!existingUser) {
+        throw new Error('Utilisateur non trouvé');
+      }
+
+      // Vérifier s'il a des emprunts actifs
+      const activeLoans = await get('SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND status = "active"', [id]);
+      if (activeLoans.count > 0) {
+        throw new Error('Impossible de supprimer un utilisateur avec des emprunts actifs');
+      }
+
+      const result = await run('DELETE FROM users WHERE id = ?', [id]);
+      return result.changes > 0;
     },
 
     // Emprunts

@@ -515,6 +515,47 @@ app.get('/api', (req, res) => {
             </div>
             
             <div class="mutation">
+                <h3>Créer un utilisateur (Admin)</h3>
+                <pre><code>mutation {
+  createUser(input: {
+    username: "new_user"
+    email: "newuser@example.com"
+    password: "password123"
+    role: "user"
+  }) {
+    id
+    username
+    email
+    role
+  }
+}</code></pre>
+            </div>
+            
+            <div class="mutation">
+                <h3>Modifier un utilisateur</h3>
+                <pre><code>mutation {
+  updateUser(id: 1, input: {
+    username: "updated_username"
+    email: "updated@example.com"
+    role: "admin"
+    password: "newpassword"
+  }) {
+    id
+    username
+    email
+    role
+  }
+}</code></pre>
+            </div>
+            
+            <div class="mutation">
+                <h3>Supprimer un utilisateur</h3>
+                <pre><code>mutation {
+  deleteUser(id: 1)
+}</code></pre>
+            </div>
+            
+            <div class="mutation">
                 <h3>Modifier un auteur</h3>
                 <pre><code>mutation {
   updateAuthor(id: 1, input: {

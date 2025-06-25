@@ -19,6 +19,7 @@
                 <a href="#home" class="nav-link active" data-section="home">Accueil</a>
                 <a href="#books" class="nav-link" data-section="books">Livres</a>
                 <a href="#authors" class="nav-link" data-section="authors">Auteurs</a>
+                <a href="#users" class="nav-link" data-section="users" id="usersNavLink" style="display: none;">Utilisateurs</a>
                 <a href="#loans" class="nav-link" data-section="loans">Emprunts</a>
                 <a href="#auth" class="nav-link" id="loginBtn" data-section="auth">Connexion</a>
                 <a href="#profile" class="nav-link" id="profileBtn" data-section="profile" style="display: none;">Profil</a>
@@ -31,7 +32,9 @@
         <div class="hero">
             <h1>Bienvenue à la Bibliothèque GraphQL</h1>
             <p>Découvrez notre collection de livres et gérez vos emprunts en ligne</p>
-            <div class="hero-stats">
+            
+            <!-- Stats pour les admins -->
+            <div class="hero-stats" id="adminStats" style="display: none;">
                 <div class="stat stat-books" style="cursor:pointer;">
                     <i class="fas fa-book"></i>
                     <span id="totalBooks">0</span>
@@ -46,6 +49,95 @@
                     <i class="fas fa-clock"></i>
                     <span id="activeLoans">0</span>
                     <p>Emprunts actifs</p>
+                </div>
+                <div class="stat stat-authors" style="cursor:pointer;">
+                    <i class="fas fa-pen-fancy"></i>
+                    <span id="totalAuthors">0</span>
+                    <p>Auteurs</p>
+                </div>
+            </div>
+
+            <!-- Contenu pour les utilisateurs simples -->
+            <div id="userContent" style="display: none;">
+                <div class="user-welcome">
+                    <h3>👋 Bonjour <span id="userName">Utilisateur</span> !</h3>
+                    <p>Voici un aperçu de votre activité dans la bibliothèque</p>
+                </div>
+                
+                <div class="user-stats">
+                    <div class="user-stat">
+                        <i class="fas fa-book-open"></i>
+                        <span id="userTotalLoans">0</span>
+                        <p>Emprunts totaux</p>
+                    </div>
+                    <div class="user-stat">
+                        <i class="fas fa-clock"></i>
+                        <span id="userActiveLoans">0</span>
+                        <p>Emprunts en cours</p>
+                    </div>
+                    <div class="user-stat">
+                        <i class="fas fa-calendar-check"></i>
+                        <span id="userReturnedLoans">0</span>
+                        <p>Livres retournés</p>
+                    </div>
+                </div>
+
+                <div class="user-recent-loans">
+                    <h4>📚 Vos derniers emprunts</h4>
+                    <div id="userRecentLoansList" class="recent-loans-list">
+                        <p>Aucun emprunt récent</p>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <h4>🚀 Actions rapides</h4>
+                    <div class="action-cards">
+                        <div class="action-card" id="quickBooksCard">
+                            <i class="fas fa-search"></i>
+                            <h5>Rechercher un livre</h5>
+                            <p>Parcourez notre catalogue</p>
+                        </div>
+                        <div class="action-card" id="quickLoansCard">
+                            <i class="fas fa-list"></i>
+                            <h5>Mes emprunts</h5>
+                            <p>Voir mes emprunts en cours</p>
+                        </div>
+                        <div class="action-card" id="quickProfileCard">
+                            <i class="fas fa-user-cog"></i>
+                            <h5>Mon profil</h5>
+                            <p>Gérer mes informations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contenu pour les visiteurs non connectés -->
+            <div id="visitorContent">
+                <div class="visitor-welcome">
+                    <h3>🌟 Découvrez notre bibliothèque</h3>
+                    <p>Connectez-vous pour accéder à toutes les fonctionnalités</p>
+                </div>
+                
+                <div class="visitor-stats">
+                    <div class="visitor-stat">
+                        <i class="fas fa-book"></i>
+                        <span id="visitorTotalBooks">0</span>
+                        <p>Livres disponibles</p>
+                    </div>
+                    <div class="visitor-stat">
+                        <i class="fas fa-pen-fancy"></i>
+                        <span id="visitorTotalAuthors">0</span>
+                        <p>Auteurs</p>
+                    </div>
+                </div>
+
+                <div class="visitor-actions">
+                    <button class="btn btn-primary connect-btn" id="visitorConnectBtn">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </button>
+                    <button class="btn btn-outline" id="visitorCatalogueBtn">
+                        <i class="fas fa-eye"></i> Voir le catalogue
+                    </button>
                 </div>
             </div>
         </div>
@@ -94,6 +186,24 @@
             </div>
 
             <div id="authorsList" class="authors-grid"></div>
+        </div>
+    </section>
+
+    <!-- Section Utilisateurs -->
+    <section id="users" class="section">
+        <div class="container">
+            <h2>👥 Utilisateurs</h2>
+            
+            <div class="action-buttons">
+                <button id="refreshUsersBtn" class="btn btn-primary">
+                    <i class="fas fa-sync"></i> Actualiser
+                </button>
+                <button id="addUserBtn" class="btn btn-success" style="display: none;">
+                    <i class="fas fa-plus"></i> Ajouter un utilisateur
+                </button>
+            </div>
+
+            <div id="usersList" class="users-grid"></div>
         </div>
     </section>
 

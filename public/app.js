@@ -18,23 +18,37 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Recherche
-    document.getElementById('searchBtn').addEventListener('click', searchBooks);
-    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) searchBtn.addEventListener('click', searchBooks);
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') searchBooks();
     });
 
     // Actualiser livres
-    document.getElementById('refreshBooksBtn').addEventListener('click', loadBooks);
+    const refreshBooksBtn = document.getElementById('refreshBooksBtn');
+    if (refreshBooksBtn) refreshBooksBtn.addEventListener('click', loadBooks);
     // Ajouter livre
-    document.getElementById('addBookBtn').addEventListener('click', showAddBookForm);
+    const addBookBtn = document.getElementById('addBookBtn');
+    if (addBookBtn) addBookBtn.addEventListener('click', showAddBookForm);
 
     // Actualiser auteurs
-    document.getElementById('refreshAuthorsBtn').addEventListener('click', loadAuthors);
+    const refreshAuthorsBtn = document.getElementById('refreshAuthorsBtn');
+    if (refreshAuthorsBtn) refreshAuthorsBtn.addEventListener('click', loadAuthors);
     // Ajouter auteur
-    document.getElementById('addAuthorBtn').addEventListener('click', showAddAuthorForm);
+    const addAuthorBtn = document.getElementById('addAuthorBtn');
+    if (addAuthorBtn) addAuthorBtn.addEventListener('click', showAddAuthorForm);
+
+    // Actualiser utilisateurs
+    const refreshUsersBtn = document.getElementById('refreshUsersBtn');
+    if (refreshUsersBtn) refreshUsersBtn.addEventListener('click', loadUsers);
+    // Ajouter utilisateur
+    const addUserBtn = document.getElementById('addUserBtn');
+    if (addUserBtn) addUserBtn.addEventListener('click', showAddUserForm);
 
     // Actualiser emprunts
-    document.getElementById('refreshLoansBtn').addEventListener('click', loadLoans);
+    const refreshLoansBtn = document.getElementById('refreshLoansBtn');
+    if (refreshLoansBtn) refreshLoansBtn.addEventListener('click', loadLoans);
     // (Emprunter un livre via modal, à implémenter si besoin)
 
     // Tabs Auth
@@ -45,17 +59,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Formulaires Auth
-    document.getElementById('loginFormEl').addEventListener('submit', login);
-    document.getElementById('registerFormEl').addEventListener('submit', register);
+    const loginFormEl = document.getElementById('loginFormEl');
+    if (loginFormEl) loginFormEl.addEventListener('submit', login);
+    const registerFormEl = document.getElementById('registerFormEl');
+    if (registerFormEl) registerFormEl.addEventListener('submit', register);
 
     // Déconnexion
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
 
     // Modal close
-    document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
 
     // Bouton Emprunter un livre redirige vers Livres
-    document.getElementById('borrowBtn').addEventListener('click', function() {
+    const borrowBtn = document.getElementById('borrowBtn');
+    if (borrowBtn) borrowBtn.addEventListener('click', function() {
         showSection('books');
     });
     
@@ -67,19 +86,97 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Stats admin cliquables sur l'accueil
-    document.querySelector('.stat-books')?.addEventListener('click', function() {
+    const statBooks = document.querySelector('.stat-books');
+    if (statBooks) statBooks.addEventListener('click', function() {
         showSection('books');
     });
-    document.querySelector('.stat-users')?.addEventListener('click', function() {
-        showSection('authors'); // ou 'users' si tu as une section users
+    const statUsers = document.querySelector('.stat-users');
+    if (statUsers) statUsers.addEventListener('click', function() {
+        showSection('users');
     });
-    document.querySelector('.stat-loans')?.addEventListener('click', function() {
+    const statLoans = document.querySelector('.stat-loans');
+    if (statLoans) statLoans.addEventListener('click', function() {
         showSection('loans');
+    });
+
+    // Boutons accueil visiteurs
+    setTimeout(() => {
+        const btnConnect = document.getElementById('visitorConnectBtn');
+        if (btnConnect) btnConnect.addEventListener('click', () => showSection('auth'));
+        const btnCatalogue = document.getElementById('visitorCatalogueBtn');
+        if (btnCatalogue) btnCatalogue.addEventListener('click', () => showSection('books'));
+    }, 0);
+
+    // Accueil visiteur
+    const btnVisitor = document.getElementById('visitorConnectBtn');
+    if (btnVisitor) btnVisitor.addEventListener('click', () => showSection('auth'));
+
+    // Livres (pour les non connectés)
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'booksConnectBtn') {
+            showSection('auth');
+        }
+    });
+
+    // Emprunts (pour les non connectés)
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'loansConnectBtn') {
+            showSection('auth');
+        }
+    });
+
+    // Actions rapides accueil
+    const quickBooks = document.getElementById('quickBooksCard');
+    if (quickBooks) quickBooks.addEventListener('click', () => showSection('books'));
+    const quickLoans = document.getElementById('quickLoansCard');
+    if (quickLoans) quickLoans.addEventListener('click', () => showSection('loans'));
+    const quickProfile = document.getElementById('quickProfileCard');
+    if (quickProfile) quickProfile.addEventListener('click', () => showSection('profile'));
+
+    // Redirection globale sur les boutons .connect-btn
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('connect-btn')) {
+            // Masquer toutes les sections
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+                section.style.display = 'none';
+            });
+            // Afficher la section auth
+            var authSection = document.getElementById('auth');
+            if (authSection) {
+                authSection.classList.add('active');
+                authSection.style.display = 'block';
+                authSection.scrollIntoView({behavior: 'smooth'});
+            } else {
+                alert("Erreur : la section #auth n'existe pas dans le DOM !");
+            }
+            // Désactiver tous les liens actifs
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            // Activer le lien Connexion si présent
+            var navLink = document.querySelector('.nav-link[data-section="auth"]');
+            if (navLink) navLink.classList.add('active');
+        }
     });
 });
 
 // Navigation
 function showSection(sectionId) {
+    // Correction : forcer l'affichage de la section auth si demandée
+    if (sectionId === 'auth') {
+        document.querySelectorAll('.section').forEach(section => {
+            section.classList.remove('active');
+            section.style.display = 'none';
+        });
+        const section = document.getElementById('auth');
+        if (section) {
+            section.classList.add('active');
+            section.style.display = 'block';
+        }
+        // Activer le lien correspondant si besoin
+        const navLink = document.querySelector(`.nav-link[data-section="auth"]`);
+        if (navLink) navLink.classList.add('active');
+        return;
+    }
     // Masquer toutes les sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
@@ -95,6 +192,13 @@ function showSection(sectionId) {
     if (section) {
         section.classList.add('active');
         section.style.display = 'block';
+        
+        // Debug pour la section auth
+        if (sectionId === 'auth') {
+            console.log('Affichage de la section auth');
+            console.log('Section trouvée:', section);
+            console.log('Display style:', section.style.display);
+        }
     }
     
     // Activer le lien correspondant
@@ -114,6 +218,13 @@ function showSection(sectionId) {
         return;
     }
     
+    // Protection pour la section utilisateurs (admin seulement)
+    if (sectionId === 'users' && (!currentUser || currentUser.role !== 'admin')) {
+        showNotification('Accès non autorisé. Seuls les administrateurs peuvent accéder à cette section.', 'error');
+        showSection('home');
+        return;
+    }
+    
     // Charger les données selon la section
     switch(sectionId) {
         case 'home':
@@ -125,6 +236,9 @@ function showSection(sectionId) {
             break;
         case 'authors':
             loadAuthors();
+            break;
+        case 'users':
+            loadUsers();
             break;
         case 'loans':
             loadLoans();
@@ -167,23 +281,104 @@ async function graphqlRequest(query, variables = {}) {
 // Statistiques de la page d'accueil
 async function loadHomeStats() {
     try {
-        // Si pas connecté ou pas admin, masquer les stats
-        if (!currentUser || currentUser.role !== 'admin') {
-            document.querySelector('.hero-stats').style.display = 'none';
-            return;
+        const adminStats = document.getElementById('adminStats');
+        const userContent = document.getElementById('userContent');
+        const visitorContent = document.getElementById('visitorContent');
+        
+        if (!currentUser) {
+            // Visiteur non connecté
+            if (adminStats) adminStats.style.display = 'none';
+            if (userContent) userContent.style.display = 'none';
+            if (visitorContent) visitorContent.style.display = 'block';
+            
+            // Charger les stats publiques
+            const data = await graphqlRequest(`
+                query {
+                    books { id }
+                    authors { id }
+                }
+            `);
+            document.getElementById('visitorTotalBooks').textContent = data.books.length;
+            document.getElementById('visitorTotalAuthors').textContent = data.authors.length;
+            
+            // Ajouter les event listeners pour les stats des visiteurs
+            document.querySelectorAll('.visitor-stat').forEach(stat => {
+                stat.style.cursor = 'pointer';
+                stat.addEventListener('click', function() {
+                    if (this.querySelector('i').classList.contains('fa-book')) {
+                        showSection('books');
+                    } else if (this.querySelector('i').classList.contains('fa-pen-fancy')) {
+                        showSection('authors');
+                    }
+                });
+            });
+            
+        } else if (currentUser.role === 'admin') {
+            // Administrateur
+            if (adminStats) adminStats.style.display = 'grid';
+            if (userContent) userContent.style.display = 'none';
+            if (visitorContent) visitorContent.style.display = 'none';
+            
+            // Charger les stats admin
+            const data = await graphqlRequest(`
+                query {
+                    books { id }
+                    users { id }
+                    activeLoans { id }
+                    authors { id }
+                }
+            `);
+            document.getElementById('totalBooks').textContent = data.books.length;
+            document.getElementById('totalUsers').textContent = data.users.length;
+            document.getElementById('activeLoans').textContent = data.activeLoans.length;
+            document.getElementById('totalAuthors').textContent = data.authors.length;
+            
         } else {
-            document.querySelector('.hero-stats').style.display = 'grid';
-        }
-        const data = await graphqlRequest(`
-            query {
-                books { id }
-                users { id }
-                activeLoans { id }
+            // Utilisateur simple
+            if (adminStats) adminStats.style.display = 'none';
+            if (userContent) userContent.style.display = 'block';
+            if (visitorContent) visitorContent.style.display = 'none';
+            
+            // Mettre à jour le nom d'utilisateur
+            document.getElementById('userName').textContent = currentUser.username;
+            
+            // Charger les stats utilisateur
+            const data = await graphqlRequest(`
+                query($userId: ID!) {
+                    userLoans(userId: $userId) {
+                        id
+                        loan_date
+                        return_date
+                        status
+                        book { title }
+                    }
+                }
+            `, { userId: currentUser.id });
+            
+            const loans = data.userLoans;
+            const totalLoans = loans.length;
+            const activeLoans = loans.filter(loan => loan.status === 'active').length;
+            const returnedLoans = loans.filter(loan => loan.status === 'returned').length;
+            
+            document.getElementById('userTotalLoans').textContent = totalLoans;
+            document.getElementById('userActiveLoans').textContent = activeLoans;
+            document.getElementById('userReturnedLoans').textContent = returnedLoans;
+            
+            // Afficher les derniers emprunts
+            const recentLoansList = document.getElementById('userRecentLoansList');
+            if (loans.length === 0) {
+                recentLoansList.innerHTML = '<p>Aucun emprunt récent</p>';
+            } else {
+                const recentLoans = loans.slice(0, 5); // Afficher les 5 derniers
+                recentLoansList.innerHTML = recentLoans.map(loan => `
+                    <div class="recent-loan-item">
+                        <h5>${loan.book.title}</h5>
+                        <p>Emprunté le: ${new Date(loan.loan_date).toLocaleDateString()}</p>
+                        <p>Statut: <span class="${loan.status === 'active' ? 'available' : 'unavailable'}">${loan.status === 'active' ? 'En cours' : 'Retourné'}</span></p>
+                    </div>
+                `).join('');
             }
-        `);
-        document.getElementById('totalBooks').textContent = data.books.length;
-        document.getElementById('totalUsers').textContent = data.users.length;
-        document.getElementById('activeLoans').textContent = data.activeLoans.length;
+        }
     } catch (error) {
         console.error('Erreur lors du chargement des statistiques:', error);
     }
@@ -228,6 +423,7 @@ function displayBooks(books) {
         return;
     }
     
+    let firstConnectBtn = true;
     booksList.innerHTML = books.map(book => `
         <div class="book-card">
             <h3>${book.title}</h3>
@@ -252,48 +448,38 @@ function displayBooks(books) {
                         <i class="fas fa-hand-holding"></i> ${book.available_copies <= 0 ? 'Indisponible' : 'Emprunter'}
                     </button>
                 ` : `
-                    <button class="btn btn-primary connect-btn" data-section="books">
+                    <button class="btn btn-primary connect-btn" ${firstConnectBtn ? 'id="booksConnectBtn"' : ''} data-section="books">
                         <i class="fas fa-sign-in-alt"></i> Se connecter pour emprunter
                     </button>
                 `}
             </div>
         </div>
     `).join('');
+    firstConnectBtn = false;
     // Ajout des listeners sur les boutons Se connecter
     document.querySelectorAll('.connect-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            redirectAfterLogin = 'books';
-            showSection('login');
+            showSection('auth');
         });
     });
     // Ajout des listeners sur les boutons Emprunter
     document.querySelectorAll('.borrow-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
             const bookId = this.getAttribute('data-book-id');
-            
-            // Vérifier si le bouton est désactivé
             if (this.disabled) {
                 showNotification('Ce livre n\'est pas disponible pour l\'emprunt', 'error');
                 return;
             }
-            
-            // Désactiver le bouton immédiatement pour éviter les clics multiples
             this.disabled = true;
             this.textContent = 'Emprunt en cours...';
-            
-            // Récupérer les infos du livre pour le modal
             const book = books.find(b => b.id == bookId);
             if (!book) {
                 this.disabled = false;
                 this.textContent = 'Emprunter';
                 return;
             }
-            
-            // Calculer la date d'aujourd'hui et la date de retour par défaut (14 jours)
             const today = new Date().toISOString().split('T')[0];
             const defaultReturn = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-            
-            // Afficher le modal de confirmation avec formulaire
             showModal(`
                 <h3>Confirmer l'emprunt</h3>
                 <p><strong>Livre :</strong> ${book.title}</p>
@@ -308,19 +494,14 @@ function displayBooks(books) {
                   <button type="submit" class="btn btn-success">Confirmer l'emprunt</button>
                 </form>
             `);
-            
-            // Lier le formulaire de confirmation
             document.getElementById('borrowForm').onsubmit = async function(e) {
                 e.preventDefault();
                 const dateEmprunt = this.dateEmprunt.value;
                 const dateRetour = this.dateRetour.value;
                 closeModal();
-                
                 try {
                     await borrowBook(bookId, dateEmprunt, dateRetour);
-                    // Le bouton sera mis à jour par loadBooks()
                 } catch (error) {
-                    // Réactiver le bouton en cas d'erreur
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-hand-holding"></i> Emprunter';
                 }
@@ -441,6 +622,77 @@ function displayAuthors(authors) {
     });
 }
 
+// Charger les utilisateurs
+async function loadUsers() {
+    // Vérifier que l'utilisateur est admin
+    if (!currentUser || currentUser.role !== 'admin') {
+        showNotification('Accès non autorisé. Seuls les administrateurs peuvent voir cette section.', 'error');
+        showSection('home');
+        return;
+    }
+    
+    const usersList = document.getElementById('usersList');
+    usersList.innerHTML = '<div class="loading">Chargement des utilisateurs...</div>';
+    
+    try {
+        const data = await graphqlRequest(`
+            query {
+                users {
+                    id
+                    username
+                    email
+                    role
+                    created_at
+                }
+            }
+        `);
+        
+        displayUsers(data.users);
+    } catch (error) {
+        usersList.innerHTML = '<div class="error">Erreur lors du chargement des utilisateurs</div>';
+    }
+}
+
+// Afficher les utilisateurs
+function displayUsers(users) {
+    const usersList = document.getElementById('usersList');
+    
+    if (users.length === 0) {
+        usersList.innerHTML = '<div class="no-data">Aucun utilisateur trouvé</div>';
+        return;
+    }
+    
+    usersList.innerHTML = users.map(user => `
+        <div class="user-card">
+            <h3>${user.username}</h3>
+            <p><strong>Email:</strong> ${user.email}</p>
+            <p><strong>Rôle:</strong> <span class="role-badge ${user.role}">${user.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</span></p>
+            <p><strong>Date d'inscription:</strong> ${new Date(user.created_at).toLocaleDateString()}</p>
+            <div class="user-actions">
+                ${currentUser && currentUser.role === 'admin' ? `
+                    <button class="btn btn-warning edit-user-btn" data-user-id="${user.id}"><i class="fas fa-edit"></i> Modifier</button>
+                    <button class="btn btn-danger delete-user-btn" data-user-id="${user.id}"><i class="fas fa-trash"></i> Supprimer</button>
+                ` : ''}
+            </div>
+        </div>
+    `).join('');
+    
+    // Listeners pour admin (modifier/supprimer)
+    document.querySelectorAll('.edit-user-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            showEditUserForm(userId);
+        });
+    });
+    document.querySelectorAll('.delete-user-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const userId = this.getAttribute('data-user-id');
+            const userName = this.closest('.user-card').querySelector('h3').textContent;
+            deleteUser(userId, userName);
+        });
+    });
+}
+
 // Charger les emprunts
 async function loadLoans() {
     const loansList = document.getElementById('loansList');
@@ -503,12 +755,21 @@ async function loadLoans() {
 // Afficher les emprunts
 function displayLoans(loans) {
     const loansList = document.getElementById('loansList');
-    
     if (loans.length === 0) {
-        loansList.innerHTML = '<div class="no-data">Aucun emprunt trouvé</div>';
+        if (!currentUser) {
+            loansList.innerHTML = `
+                <div class="no-data">
+                    Veuillez vous connecter pour voir vos emprunts.<br><br>
+                    <button class="btn btn-primary connect-btn">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </button>
+                </div>
+            `;
+        } else {
+            loansList.innerHTML = '<div class="no-data">Aucun emprunt trouvé</div>';
+        }
         return;
     }
-    
     loansList.innerHTML = loans.map(loan => `
         <div class="loan-item">
             <div class="loan-info">
@@ -525,11 +786,15 @@ function displayLoans(loans) {
                         <i class="fas fa-undo"></i> Retourner
                     </button>
                 ` : ''}
+                ${!currentUser ? `
+                    <button class="btn btn-primary connect-btn">
+                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                    </button>
+                ` : ''}
             </div>
         </div>
     `).join('');
-    
-    // Ajouter les listeners pour les boutons retourner
+    // Ajout des listeners pour les boutons retourner
     document.querySelectorAll('.return-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const loanId = this.getAttribute('data-loan-id');
@@ -682,14 +947,20 @@ function checkAuthStatus() {
         // Afficher/masquer les boutons selon le rôle
         const addBookBtn = document.getElementById('addBookBtn');
         const addAuthorBtn = document.getElementById('addAuthorBtn');
+        const addUserBtn = document.getElementById('addUserBtn');
         const borrowBtn = document.getElementById('borrowBtn');
+        const usersNavLink = document.getElementById('usersNavLink');
         
         if (currentUser.role === 'admin') {
             if (addBookBtn) addBookBtn.style.display = 'inline-block';
             if (addAuthorBtn) addAuthorBtn.style.display = 'inline-block';
+            if (addUserBtn) addUserBtn.style.display = 'inline-block';
+            if (usersNavLink) usersNavLink.style.display = 'inline-block';
         } else {
             if (addBookBtn) addBookBtn.style.display = 'none';
             if (addAuthorBtn) addAuthorBtn.style.display = 'none';
+            if (addUserBtn) addUserBtn.style.display = 'none';
+            if (usersNavLink) usersNavLink.style.display = 'none';
         }
         
         if (borrowBtn) {
@@ -712,11 +983,15 @@ function checkAuthStatus() {
         // Masquer les boutons d'action
         const addBookBtn = document.getElementById('addBookBtn');
         const addAuthorBtn = document.getElementById('addAuthorBtn');
+        const addUserBtn = document.getElementById('addUserBtn');
         const borrowBtn = document.getElementById('borrowBtn');
+        const usersNavLink = document.getElementById('usersNavLink');
         
         if (addBookBtn) addBookBtn.style.display = 'none';
         if (addAuthorBtn) addAuthorBtn.style.display = 'none';
+        if (addUserBtn) addUserBtn.style.display = 'none';
         if (borrowBtn) borrowBtn.style.display = 'none';
+        if (usersNavLink) usersNavLink.style.display = 'none';
     }
 }
 
@@ -1237,11 +1512,190 @@ async function deleteAuthor(authorId, authorName) {
     }
 }
 
+// Ajouter un utilisateur
+function showAddUserForm() {
+    const content = `
+        <h3>Ajouter un utilisateur</h3>
+        <form id="addUserForm">
+            <div class="form-group">
+                <label>Nom d'utilisateur</label>
+                <input type="text" id="addUserUsername" required>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="addUserEmail" required>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="addUserPassword" required>
+            </div>
+            <div class="form-group">
+                <label>Rôle</label>
+                <select id="addUserRole" required>
+                    <option value="user">Utilisateur</option>
+                    <option value="admin">Administrateur</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-success">Ajouter</button>
+        </form>
+    `;
+    showModal(content);
+    document.getElementById('addUserForm').onsubmit = addUser;
+}
+
+// Créer un utilisateur
+async function addUser(event) {
+    event.preventDefault();
+    
+    const username = document.getElementById('addUserUsername').value;
+    const email = document.getElementById('addUserEmail').value;
+    const password = document.getElementById('addUserPassword').value;
+    const role = document.getElementById('addUserRole').value;
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation CreateUser($input: UserCreateInput!) {
+                createUser(input: $input) {
+                    id
+                    username
+                    email
+                    role
+                }
+            }
+        `, {
+            input: { username, email, password, role }
+        });
+        
+        showNotification(`Utilisateur "${data.createUser.username}" créé avec succès !`, 'success');
+        closeModal();
+        loadUsers();
+    } catch (error) {
+        showNotification('Erreur lors de la création: ' + error.message, 'error');
+    }
+}
+
+// Modifier un utilisateur
+function showEditUserForm(userId) {
+    // Récupérer les données de l'utilisateur
+    graphqlRequest(`
+        query GetUser($id: ID!) {
+            user(id: $id) {
+                id
+                username
+                email
+                role
+            }
+        }
+    `, { id: userId }).then(userData => {
+        const user = userData.user;
+        
+        const content = `
+            <h3>Modifier l'utilisateur</h3>
+            <form id="editUserForm">
+                <div class="form-group">
+                    <label>Nom d'utilisateur</label>
+                    <input type="text" id="editUserUsername" value="${user.username}" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="editUserEmail" value="${user.email}" required>
+                </div>
+                <div class="form-group">
+                    <label>Rôle</label>
+                    <select id="editUserRole" required>
+                        <option value="user" ${user.role === 'user' ? 'selected' : ''}>Utilisateur</option>
+                        <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Administrateur</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Nouveau mot de passe (laisser vide pour ne pas changer)</label>
+                    <input type="password" id="editUserPassword">
+                </div>
+                <button type="submit" class="btn btn-warning">Modifier</button>
+            </form>
+        `;
+        showModal(content);
+        document.getElementById('editUserForm').onsubmit = (e) => updateUser(e, userId);
+    });
+}
+
+// Mettre à jour un utilisateur
+async function updateUser(event, userId) {
+    event.preventDefault();
+    
+    const username = document.getElementById('editUserUsername').value;
+    const email = document.getElementById('editUserEmail').value;
+    const role = document.getElementById('editUserRole').value;
+    const password = document.getElementById('editUserPassword').value;
+    
+    try {
+        const input = {
+            username,
+            email,
+            role
+        };
+        
+        // Ajouter le mot de passe seulement s'il est fourni
+        if (password.trim()) {
+            input.password = password;
+        }
+        
+        const data = await graphqlRequest(`
+            mutation UpdateUser($id: ID!, $input: UserUpdateInput!) {
+                updateUser(id: $id, input: $input) {
+                    id
+                    username
+                    email
+                    role
+                }
+            }
+        `, {
+            id: userId,
+            input: input
+        });
+        
+        showNotification(`Utilisateur "${data.updateUser.username}" modifié avec succès !`, 'success');
+        closeModal();
+        loadUsers();
+    } catch (error) {
+        showNotification('Erreur lors de la modification: ' + error.message, 'error');
+    }
+}
+
+// Supprimer un utilisateur
+async function deleteUser(userId, userName) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${userName}" ?`)) {
+        return;
+    }
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation DeleteUser($id: ID!) {
+                deleteUser(id: $id)
+            }
+        `, {
+            id: userId
+        });
+        
+        if (data.deleteUser) {
+            showNotification(`Utilisateur "${userName}" supprimé avec succès !`, 'success');
+            loadUsers();
+        } else {
+            showNotification('Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showNotification('Erreur lors de la suppression: ' + error.message, 'error');
+    }
+}
+
 function attachHomeStatsListeners() {
     const statBooks = document.querySelector('.stat-books');
     const statUsers = document.querySelector('.stat-users');
     const statLoans = document.querySelector('.stat-loans');
+    const statAuthors = document.querySelector('.stat-authors');
+    
     if (statBooks) statBooks.onclick = () => showSection('books');
-    if (statUsers) statUsers.onclick = () => showSection('authors'); // ou 'users' si tu ajoutes une section users
+    if (statUsers) statUsers.onclick = () => showSection('users');
     if (statLoans) statLoans.onclick = () => showSection('loans');
+    if (statAuthors) statAuthors.onclick = () => showSection('authors');
 } 

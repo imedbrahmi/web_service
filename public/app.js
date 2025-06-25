@@ -65,6 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
             showSection('books');
         }
     });
+
+    // Stats admin cliquables sur l'accueil
+    document.querySelector('.stat-books')?.addEventListener('click', function() {
+        showSection('books');
+    });
+    document.querySelector('.stat-users')?.addEventListener('click', function() {
+        showSection('authors'); // ou 'users' si tu as une section users
+    });
+    document.querySelector('.stat-loans')?.addEventListener('click', function() {
+        showSection('loans');
+    });
 });
 
 // Navigation
@@ -107,6 +118,7 @@ function showSection(sectionId) {
     switch(sectionId) {
         case 'home':
             loadHomeStats();
+            attachHomeStatsListeners();
             break;
         case 'books':
             loadBooks();
@@ -1223,4 +1235,13 @@ async function deleteAuthor(authorId, authorName) {
     } catch (error) {
         showNotification('Erreur lors de la suppression: ' + error.message, 'error');
     }
+}
+
+function attachHomeStatsListeners() {
+    const statBooks = document.querySelector('.stat-books');
+    const statUsers = document.querySelector('.stat-users');
+    const statLoans = document.querySelector('.stat-loans');
+    if (statBooks) statBooks.onclick = () => showSection('books');
+    if (statUsers) statUsers.onclick = () => showSection('authors'); // ou 'users' si tu ajoutes une section users
+    if (statLoans) statLoans.onclick = () => showSection('loans');
 } 

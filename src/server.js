@@ -3,6 +3,7 @@ const { ApolloServer } = require('apollo-server-express');
 const cors = require('cors');
 const helmet = require('helmet');
 const path = require('path');
+const jwt = require('jsonwebtoken');
 
 const typeDefs = require('./graphql/schema');
 const resolvers = require('./graphql/resolvers');
@@ -16,16 +17,56 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json());
 
+// Middleware d'authentification
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+
+  if (!token) {
+    return next();
+  }
+
+  jwt.verify(token, 'votre-secret-jwt-super-securise', (err, user) => {
+    if (err) {
+      console.log('Token invalide:', err.message);
+      return next();
+    }
+    req.user = user;
+    next();
+  });
+};
+
+app.use(authenticateToken);
+
 // Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Route de test pour vérifier l'authentification
+app.get('/api/me', (req, res) => {
+  if (req.user) {
+    res.json({ 
+      authenticated: true, 
+      userId: req.user.userId,
+      message: 'Token valide'
+    });
+  } else {
+    res.status(401).json({ 
+      authenticated: false, 
+      message: 'Token manquant ou invalide' 
+    });
+  }
+});
 
 // Créer le serveur Apollo
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req }) => {
-    // Ici vous pouvez ajouter l'authentification JWT si nécessaire
-    return { req };
+    // Ajouter l'utilisateur au contexte si authentifié
+    return {
+      user: req.user,
+      isAuthenticated: !!req.user
+    };
   },
   formatError: (error) => {
     console.error('GraphQL Error:', error);

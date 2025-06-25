@@ -20,7 +20,7 @@
                 <a href="#books" class="nav-link" data-section="books">Livres</a>
                 <a href="#authors" class="nav-link" data-section="authors">Auteurs</a>
                 <a href="#loans" class="nav-link" data-section="loans">Emprunts</a>
-                <a href="#login" class="nav-link" id="loginBtn" data-section="login">Connexion</a>
+                <a href="#auth" class="nav-link" id="loginBtn" data-section="auth">Connexion</a>
                 <a href="#profile" class="nav-link" id="profileBtn" data-section="profile" style="display: none;">Profil</a>
             </div>
         </div>
@@ -115,8 +115,8 @@
         </div>
     </section>
 
-    <!-- Section Connexion -->
-    <section id="login" class="section">
+    <!-- Section Auth (pour la gestion JavaScript) -->
+    <section id="auth" class="section" style="display: none;">
         <div class="container">
             <div class="auth-container">
                 <div class="auth-tabs">
@@ -164,13 +164,10 @@
     </section>
 
     <!-- Section Profil -->
-    <section id="profile" class="section">
+    <section id="profile" class="section" style="display: none;">
         <div class="container">
             <h2>👤 Mon Profil</h2>
-            <div id="profileInfo" class="profile-info"></div>
-            <button id="logoutBtn" class="btn btn-danger">
-                <i class="fas fa-sign-out-alt"></i> Se déconnecter
-            </button>
+            <div id="userInfo" class="profile-info"></div>
         </div>
     </section>
 

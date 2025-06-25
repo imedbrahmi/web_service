@@ -58,6 +58,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('borrowBtn').addEventListener('click', function() {
         showSection('books');
     });
+    
+    // S'assurer que le bouton borrowBtn fonctionne même s'il est créé dynamiquement
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.id === 'borrowBtn') {
+            showSection('books');
+        }
+    });
 });
 
 // Navigation
@@ -65,17 +72,37 @@ function showSection(sectionId) {
     // Masquer toutes les sections
     document.querySelectorAll('.section').forEach(section => {
         section.classList.remove('active');
+        section.style.display = 'none';
     });
     // Masquer tous les liens
     document.querySelectorAll('.nav-link').forEach(link => {
         link.classList.remove('active');
     });
+    
     // Afficher la section demandée
     const section = document.getElementById(sectionId);
-    if (section) section.classList.add('active');
+    if (section) {
+        section.classList.add('active');
+        section.style.display = 'block';
+    }
+    
     // Activer le lien correspondant
     const navLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
     if (navLink) navLink.classList.add('active');
+    
+    // Gestion spéciale pour auth/profile
+    if (sectionId === 'auth' && currentUser) {
+        // Si connecté et qu'on essaie d'accéder à auth, rediriger vers profile
+        showSection('profile');
+        return;
+    }
+    
+    if (sectionId === 'profile' && !currentUser) {
+        // Si pas connecté et qu'on essaie d'accéder à profile, rediriger vers auth
+        showSection('auth');
+        return;
+    }
+    
     // Charger les données selon la section
     switch(sectionId) {
         case 'home':
@@ -197,22 +224,26 @@ function displayBooks(books) {
             <p><strong>Année:</strong> ${book.publication_year || 'Non disponible'}</p>
             <p><strong>Genre:</strong> ${book.genre || 'Non spécifié'}</p>
             <p><strong>Description:</strong> ${book.description || 'Aucune description'}</p>
-            <p><strong>Disponibilité:</strong> ${book.available_copies}/${book.total_copies} exemplaires</p>
+            <p><strong>Disponibilité:</strong> 
+                <span class="${book.available_copies > 0 ? 'available' : 'unavailable'}">
+                    ${book.available_copies}/${book.total_copies} exemplaires
+                    ${book.available_copies <= 0 ? ' (Indisponible)' : ' (Disponible)'}
+                </span>
+            </p>
             <div class="book-actions">
                 ${currentUser && currentUser.role === 'admin' ? `
                     <button class="btn btn-warning edit-book-btn" data-book-id="${book.id}"><i class="fas fa-edit"></i> Modifier</button>
                     <button class="btn btn-danger delete-book-btn" data-book-id="${book.id}"><i class="fas fa-trash"></i> Supprimer</button>
                 ` : ''}
-                ${currentUser && currentUser.role === 'user' ? `
-                    <button class="btn btn-primary borrow-btn" data-book-id="${book.id}" ${book.available_copies <= 0 ? 'disabled' : ''}>
-                        <i class="fas fa-hand-holding"></i> Emprunter
+                ${currentUser ? `
+                    <button class="btn ${book.available_copies <= 0 ? 'btn-unavailable' : 'btn-primary'} borrow-btn" data-book-id="${book.id}" ${book.available_copies <= 0 ? 'disabled' : ''}>
+                        <i class="fas fa-hand-holding"></i> ${book.available_copies <= 0 ? 'Indisponible' : 'Emprunter'}
                     </button>
-                ` : ''}
-                ${!currentUser ? `
+                ` : `
                     <button class="btn btn-primary connect-btn" data-section="books">
-                        <i class="fas fa-sign-in-alt"></i> Se connecter
+                        <i class="fas fa-sign-in-alt"></i> Se connecter pour emprunter
                     </button>
-                ` : ''}
+                `}
             </div>
         </div>
     `).join('');
@@ -227,12 +258,29 @@ function displayBooks(books) {
     document.querySelectorAll('.borrow-btn').forEach(btn => {
         btn.addEventListener('click', async function() {
             const bookId = this.getAttribute('data-book-id');
+            
+            // Vérifier si le bouton est désactivé
+            if (this.disabled) {
+                showNotification('Ce livre n\'est pas disponible pour l\'emprunt', 'error');
+                return;
+            }
+            
+            // Désactiver le bouton immédiatement pour éviter les clics multiples
+            this.disabled = true;
+            this.textContent = 'Emprunt en cours...';
+            
             // Récupérer les infos du livre pour le modal
             const book = books.find(b => b.id == bookId);
-            if (!book) return;
+            if (!book) {
+                this.disabled = false;
+                this.textContent = 'Emprunter';
+                return;
+            }
+            
             // Calculer la date d'aujourd'hui et la date de retour par défaut (14 jours)
             const today = new Date().toISOString().split('T')[0];
             const defaultReturn = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+            
             // Afficher le modal de confirmation avec formulaire
             showModal(`
                 <h3>Confirmer l'emprunt</h3>
@@ -248,27 +296,37 @@ function displayBooks(books) {
                   <button type="submit" class="btn btn-success">Confirmer l'emprunt</button>
                 </form>
             `);
+            
             // Lier le formulaire de confirmation
             document.getElementById('borrowForm').onsubmit = async function(e) {
                 e.preventDefault();
                 const dateEmprunt = this.dateEmprunt.value;
                 const dateRetour = this.dateRetour.value;
                 closeModal();
-                await borrowBook(bookId, dateEmprunt, dateRetour);
+                
+                try {
+                    await borrowBook(bookId, dateEmprunt, dateRetour);
+                    // Le bouton sera mis à jour par loadBooks()
+                } catch (error) {
+                    // Réactiver le bouton en cas d'erreur
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-hand-holding"></i> Emprunter';
+                }
             };
         });
     });
     // Listeners pour admin (modifier/supprimer)
     document.querySelectorAll('.edit-book-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // TODO: showEditBookForm(this.getAttribute('data-book-id'));
-            showNotification('Fonctionnalité à implémenter : édition de livre', 'info');
+            const bookId = this.getAttribute('data-book-id');
+            showEditBookForm(bookId);
         });
     });
     document.querySelectorAll('.delete-book-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // TODO: deleteBook(this.getAttribute('data-book-id'));
-            showNotification('Fonctionnalité à implémenter : suppression de livre', 'info');
+            const bookId = this.getAttribute('data-book-id');
+            const bookTitle = this.closest('.book-card').querySelector('h3').textContent;
+            deleteBook(bookId, bookTitle);
         });
     });
 }
@@ -322,6 +380,7 @@ async function loadAuthors() {
                     name
                     biography
                     birth_date
+                    created_at
                 }
             }
         `);
@@ -357,14 +416,15 @@ function displayAuthors(authors) {
     // Listeners pour admin (modifier/supprimer)
     document.querySelectorAll('.edit-author-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // TODO: showEditAuthorForm(this.getAttribute('data-author-id'));
-            showNotification('Fonctionnalité à implémenter : édition d\'auteur', 'info');
+            const authorId = this.getAttribute('data-author-id');
+            showEditAuthorForm(authorId);
         });
     });
     document.querySelectorAll('.delete-author-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            // TODO: deleteAuthor(this.getAttribute('data-author-id'));
-            showNotification('Fonctionnalité à implémenter : suppression d\'auteur', 'info');
+            const authorId = this.getAttribute('data-author-id');
+            const authorName = this.closest('.author-card').querySelector('h3').textContent;
+            deleteAuthor(authorId, authorName);
         });
     });
 }
@@ -456,25 +516,25 @@ function displayLoans(loans) {
             </div>
         </div>
     `).join('');
-    // Lier dynamiquement les boutons Retourner
+    
+    // Ajouter les listeners pour les boutons retourner
     document.querySelectorAll('.return-btn').forEach(btn => {
         btn.addEventListener('click', function() {
-            returnBook(this.getAttribute('data-loan-id'));
+            const loanId = this.getAttribute('data-loan-id');
+            returnBook(loanId);
         });
     });
 }
 
-// Authentification
+// Auth
 function showAuthTab(tab) {
     document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.auth-form').forEach(f => f.style.display = 'none');
-    const tabBtn = document.querySelector(`.auth-tab[data-auth="${tab}"]`);
-    const form = document.getElementById(`${tab}Form`);
-    if (tabBtn) tabBtn.classList.add('active');
-    if (form) form.style.display = 'block';
+    
+    document.querySelector(`[data-auth="${tab}"]`).classList.add('active');
+    document.getElementById(`${tab}Form`).style.display = 'block';
 }
 
-// Inscription
 async function register(event) {
     event.preventDefault();
     
@@ -491,6 +551,7 @@ async function register(event) {
                         id
                         username
                         email
+                        role
                     }
                 }
             }
@@ -504,16 +565,19 @@ async function register(event) {
         
         showNotification('Inscription réussie !', 'success');
         checkAuthStatus();
-        showSection('home');
         
-        // Vider le formulaire
-        event.target.reset();
+        // Rediriger si nécessaire
+        if (redirectAfterLogin) {
+            showSection(redirectAfterLogin);
+            redirectAfterLogin = null;
+        } else {
+            showSection('home');
+        }
     } catch (error) {
         showNotification('Erreur lors de l\'inscription: ' + error.message, 'error');
     }
 }
 
-// Connexion
 async function login(event) {
     event.preventDefault();
     
@@ -543,89 +607,169 @@ async function login(event) {
         
         showNotification('Connexion réussie !', 'success');
         checkAuthStatus();
+        
+        // Rediriger si nécessaire
         if (redirectAfterLogin) {
             showSection(redirectAfterLogin);
             redirectAfterLogin = null;
         } else {
             showSection('home');
         }
-        
-        // Vider le formulaire
-        event.target.reset();
     } catch (error) {
         showNotification('Erreur lors de la connexion: ' + error.message, 'error');
     }
 }
 
-// Déconnexion
 function logout() {
     authToken = null;
     currentUser = null;
     localStorage.removeItem('authToken');
-    
     showNotification('Déconnexion réussie', 'info');
     checkAuthStatus();
     showSection('home');
 }
 
-// Vérifier le statut d'authentification
 function checkAuthStatus() {
+    const authSection = document.getElementById('auth');
+    const profileSection = document.getElementById('profile');
+    const userInfo = document.getElementById('userInfo');
     const loginBtn = document.getElementById('loginBtn');
     const profileBtn = document.getElementById('profileBtn');
-    const addBookBtn = document.getElementById('addBookBtn');
-    const addAuthorBtn = document.getElementById('addAuthorBtn');
-    const borrowBtn = document.getElementById('borrowBtn');
-    if (currentUser) {
-        loginBtn.style.display = 'none';
-        profileBtn.style.display = 'inline-block';
-        // Seul l'admin peut ajouter livres/auteurs
-        if (currentUser.role === 'admin') {
-            addBookBtn.style.display = 'inline-block';
-            addAuthorBtn.style.display = 'inline-block';
-        } else {
-            addBookBtn.style.display = 'none';
-            addAuthorBtn.style.display = 'none';
-        }
-        borrowBtn.style.display = 'inline-block';
-    } else {
-        loginBtn.style.display = 'inline-block';
-        profileBtn.style.display = 'none';
-        addBookBtn.style.display = 'none';
-        addAuthorBtn.style.display = 'none';
-        borrowBtn.style.display = 'none';
-    }
-}
-
-// Charger le profil
-async function loadProfile() {
-    if (!currentUser) {
-        showSection('login');
+    
+    // Vérifier si on a un token stocké
+    if (authToken && !currentUser) {
+        // Tenter de restaurer la session
+        validateAndRestoreSession();
         return;
     }
     
-    const profileInfo = document.getElementById('profileInfo');
-    profileInfo.innerHTML = `
-        <h3>Informations du profil</h3>
-        <p><strong>Nom d'utilisateur:</strong> ${currentUser.username}</p>
-        <p><strong>Email:</strong> ${currentUser.email}</p>
-        <p><strong>ID:</strong> ${currentUser.id}</p>
-    `;
+    if (currentUser) {
+        // Masquer la section auth et afficher le profil
+        if (authSection) authSection.style.display = 'none';
+        if (profileSection) profileSection.style.display = 'block';
+        
+        // Gérer les liens de navigation
+        if (loginBtn) loginBtn.style.display = 'none';
+        if (profileBtn) profileBtn.style.display = 'inline-block';
+        
+        if (userInfo) {
+            userInfo.innerHTML = `
+                <h3>Profil de ${currentUser.username}</h3>
+                <p><strong>Email:</strong> ${currentUser.email}</p>
+                <p><strong>Rôle:</strong> ${currentUser.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</p>
+                <button id="logoutBtn" class="btn btn-danger">Se déconnecter</button>
+            `;
+            
+            // Ajouter l'event listener pour le bouton de déconnexion
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', logout);
+            }
+        }
+        
+        // Afficher/masquer les boutons selon le rôle
+        const addBookBtn = document.getElementById('addBookBtn');
+        const addAuthorBtn = document.getElementById('addAuthorBtn');
+        const borrowBtn = document.getElementById('borrowBtn');
+        
+        if (currentUser.role === 'admin') {
+            if (addBookBtn) addBookBtn.style.display = 'inline-block';
+            if (addAuthorBtn) addAuthorBtn.style.display = 'inline-block';
+        } else {
+            if (addBookBtn) addBookBtn.style.display = 'none';
+            if (addAuthorBtn) addAuthorBtn.style.display = 'none';
+        }
+        
+        if (borrowBtn) {
+            borrowBtn.style.display = 'inline-block';
+            // S'assurer que l'event listener est attaché
+            borrowBtn.onclick = function() {
+                showSection('books');
+            };
+        }
+        
+    } else {
+        // Afficher la section auth et masquer le profil
+        if (authSection) authSection.style.display = 'block';
+        if (profileSection) profileSection.style.display = 'none';
+        
+        // Gérer les liens de navigation
+        if (loginBtn) loginBtn.style.display = 'inline-block';
+        if (profileBtn) profileBtn.style.display = 'none';
+        
+        // Masquer les boutons d'action
+        const addBookBtn = document.getElementById('addBookBtn');
+        const addAuthorBtn = document.getElementById('addAuthorBtn');
+        const borrowBtn = document.getElementById('borrowBtn');
+        
+        if (addBookBtn) addBookBtn.style.display = 'none';
+        if (addAuthorBtn) addAuthorBtn.style.display = 'none';
+        if (borrowBtn) borrowBtn.style.display = 'none';
+    }
 }
 
-// Emprunter un livre
-async function borrowBook(bookId, dateEmprunt, dateRetour) {
+// Valider et restaurer la session utilisateur
+async function validateAndRestoreSession() {
+    try {
+        // Vérifier le token avec la route /api/me
+        const response = await fetch('/api/me', {
+            headers: {
+                'Authorization': `Bearer ${authToken}`
+            }
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            
+            // Récupérer les détails de l'utilisateur
+            const userData = await graphqlRequest(`
+                query GetUser($id: ID!) {
+                    user(id: $id) {
+                        id
+                        username
+                        email
+                        role
+                    }
+                }
+            `, { id: data.userId });
+            
+            if (userData.user) {
+                currentUser = userData.user;
+                showNotification(`Bienvenue ${currentUser.username} !`, 'success');
+                checkAuthStatus();
+            } else {
+                throw new Error('Utilisateur non trouvé');
+            }
+        } else {
+            throw new Error('Token invalide');
+        }
+    } catch (error) {
+        console.log('Token invalide ou expiré, déconnexion...', error.message);
+        localStorage.removeItem('authToken');
+        authToken = null;
+        currentUser = null;
+        checkAuthStatus();
+    }
+}
+
+async function loadProfile() {
     if (!currentUser) {
-        showNotification('Connectez-vous pour emprunter', 'info');
+        showSection('auth');
         return;
     }
+    // Le profil est déjà affiché dans checkAuthStatus()
+}
+
+async function borrowBook(bookId, dateEmprunt, dateRetour) {
     try {
         const data = await graphqlRequest(`
-            mutation BorrowBook($userId: ID!, $bookId: ID!, $loanDate: String!, $dueDate: String!) {
+            mutation BorrowBook($userId: ID!, $bookId: ID!, $loanDate: String, $dueDate: String) {
                 borrowBook(userId: $userId, bookId: $bookId, loanDate: $loanDate, dueDate: $dueDate) {
                     id
                     book {
                         title
                     }
+                    loan_date
                     due_date
                 }
             }
@@ -635,11 +779,19 @@ async function borrowBook(bookId, dateEmprunt, dateRetour) {
             loanDate: dateEmprunt,
             dueDate: dateRetour
         });
-        showNotification(`Livre "${data.borrowBook.book.title}" emprunté avec succès !`, 'success');
-        loadBooks(); // Recharger la liste des livres
-        loadLoans(); // Recharger la liste des emprunts
+        
+        const dueDate = new Date(data.borrowBook.due_date).toLocaleDateString();
+        showNotification(`Livre "${data.borrowBook.book.title}" emprunté avec succès ! Date de retour : ${dueDate}`, 'success');
+        
+        // Recharger les données
+        await Promise.all([
+            loadBooks(), // Recharger la liste des livres
+            loadLoans()  // Recharger la liste des emprunts
+        ]);
+        
     } catch (error) {
         showNotification('Erreur lors de l\'emprunt: ' + error.message, 'error');
+        throw error; // Propager l'erreur pour la gestion dans le listener
     }
 }
 
@@ -747,7 +899,7 @@ function showAddBookForm() {
 function showAddAuthorForm() {
     const content = `
         <h3>Ajouter un auteur</h3>
-        <form onsubmit="addAuthor(event)">
+        <form id="addAuthorForm">
             <div class="form-group">
                 <label>Nom</label>
                 <input type="text" id="authorName" required>
@@ -764,6 +916,7 @@ function showAddAuthorForm() {
         </form>
     `;
     showModal(content);
+    document.getElementById('addAuthorForm').onsubmit = addAuthor;
 }
 
 // Ajouter un livre
@@ -829,8 +982,245 @@ async function addAuthor(event) {
         
         showNotification(`Auteur "${data.createAuthor.name}" ajouté avec succès !`, 'success');
         closeModal();
-        loadAuthors();
+        
+        // Recharger la liste des auteurs et rester sur la page auteurs
+        await loadAuthors();
+        
+        // S'assurer qu'on reste sur la page auteurs
+        showSection('authors');
+        
     } catch (error) {
         showNotification('Erreur lors de l\'ajout: ' + error.message, 'error');
+    }
+}
+
+// Modifier un livre
+function showEditBookForm(bookId) {
+    // Récupérer les données du livre
+    graphqlRequest(`
+        query GetBook($id: ID!) {
+            book(id: $id) {
+                id
+                title
+                isbn
+                publication_year
+                genre
+                description
+                total_copies
+                author_id
+            }
+        }
+    `, { id: bookId }).then(bookData => {
+        const book = bookData.book;
+        
+        // Charger la liste des auteurs
+        graphqlRequest(`query { authors { id name } }`).then(authorsData => {
+            const authors = authorsData.authors || [];
+            const authorOptions = authors.map(a => 
+                `<option value="${a.id}" ${a.id === book.author_id ? 'selected' : ''}>${a.name}</option>`
+            ).join('');
+            
+            const content = `
+                <h3>Modifier le livre</h3>
+                <form id="editBookForm">
+                    <div class="form-group">
+                        <label>Titre</label>
+                        <input type="text" id="editBookTitle" value="${book.title}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ISBN</label>
+                        <input type="text" id="editBookIsbn" value="${book.isbn || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Auteur</label>
+                        <select id="editBookAuthor" required>${authorOptions}</select>
+                    </div>
+                    <div class="form-group">
+                        <label>Année de publication</label>
+                        <input type="number" id="editBookYear" value="${book.publication_year || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Genre</label>
+                        <input type="text" id="editBookGenre" value="${book.genre || ''}">
+                    </div>
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="editBookDescription" rows="3">${book.description || ''}</textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre d'exemplaires</label>
+                        <input type="number" id="editBookCopies" value="${book.total_copies}" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-warning">Modifier</button>
+                </form>
+            `;
+            showModal(content);
+            document.getElementById('editBookForm').onsubmit = (e) => updateBook(e, bookId);
+        });
+    });
+}
+
+// Mettre à jour un livre
+async function updateBook(event, bookId) {
+    event.preventDefault();
+    
+    const title = document.getElementById('editBookTitle').value;
+    const isbn = document.getElementById('editBookIsbn').value;
+    const author_id = parseInt(document.getElementById('editBookAuthor').value);
+    const year = document.getElementById('editBookYear').value;
+    const genre = document.getElementById('editBookGenre').value;
+    const description = document.getElementById('editBookDescription').value;
+    const copies = document.getElementById('editBookCopies').value;
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation UpdateBook($id: ID!, $input: BookInput!) {
+                updateBook(id: $id, input: $input) {
+                    id
+                    title
+                }
+            }
+        `, {
+            id: bookId,
+            input: {
+                title,
+                isbn: isbn || null,
+                author_id,
+                publication_year: year ? parseInt(year) : null,
+                genre: genre || null,
+                description: description || null,
+                total_copies: parseInt(copies)
+            }
+        });
+        
+        showNotification(`Livre "${data.updateBook.title}" modifié avec succès !`, 'success');
+        closeModal();
+        loadBooks();
+    } catch (error) {
+        showNotification('Erreur lors de la modification: ' + error.message, 'error');
+    }
+}
+
+// Supprimer un livre
+async function deleteBook(bookId, bookTitle) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer le livre "${bookTitle}" ?`)) {
+        return;
+    }
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation DeleteBook($id: ID!) {
+                deleteBook(id: $id)
+            }
+        `, {
+            id: bookId
+        });
+        
+        if (data.deleteBook) {
+            showNotification(`Livre "${bookTitle}" supprimé avec succès !`, 'success');
+            loadBooks();
+        } else {
+            showNotification('Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showNotification('Erreur lors de la suppression: ' + error.message, 'error');
+    }
+}
+
+// Modifier un auteur
+function showEditAuthorForm(authorId) {
+    // Récupérer les données de l'auteur
+    graphqlRequest(`
+        query GetAuthor($id: ID!) {
+            author(id: $id) {
+                id
+                name
+                biography
+                birth_date
+            }
+        }
+    `, { id: authorId }).then(authorData => {
+        const author = authorData.author;
+        const birthDate = author.birth_date ? author.birth_date.split('T')[0] : '';
+        
+        const content = `
+            <h3>Modifier l'auteur</h3>
+            <form id="editAuthorForm">
+                <div class="form-group">
+                    <label>Nom</label>
+                    <input type="text" id="editAuthorName" value="${author.name}" required>
+                </div>
+                <div class="form-group">
+                    <label>Biographie</label>
+                    <textarea id="editAuthorBio" rows="3">${author.biography || ''}</textarea>
+                </div>
+                <div class="form-group">
+                    <label>Date de naissance</label>
+                    <input type="date" id="editAuthorBirth" value="${birthDate}">
+                </div>
+                <button type="submit" class="btn btn-warning">Modifier</button>
+            </form>
+        `;
+        showModal(content);
+        document.getElementById('editAuthorForm').onsubmit = (e) => updateAuthor(e, authorId);
+    });
+}
+
+// Mettre à jour un auteur
+async function updateAuthor(event, authorId) {
+    event.preventDefault();
+    
+    const name = document.getElementById('editAuthorName').value;
+    const bio = document.getElementById('editAuthorBio').value;
+    const birth = document.getElementById('editAuthorBirth').value;
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation UpdateAuthor($id: ID!, $input: AuthorInput!) {
+                updateAuthor(id: $id, input: $input) {
+                    id
+                    name
+                }
+            }
+        `, {
+            id: authorId,
+            input: {
+                name,
+                biography: bio || null,
+                birth_date: birth || null
+            }
+        });
+        
+        showNotification(`Auteur "${data.updateAuthor.name}" modifié avec succès !`, 'success');
+        closeModal();
+        loadAuthors();
+    } catch (error) {
+        showNotification('Erreur lors de la modification: ' + error.message, 'error');
+    }
+}
+
+// Supprimer un auteur
+async function deleteAuthor(authorId, authorName) {
+    if (!confirm(`Êtes-vous sûr de vouloir supprimer l'auteur "${authorName}" ?`)) {
+        return;
+    }
+    
+    try {
+        const data = await graphqlRequest(`
+            mutation DeleteAuthor($id: ID!) {
+                deleteAuthor(id: $id)
+            }
+        `, {
+            id: authorId
+        });
+        
+        if (data.deleteAuthor) {
+            showNotification(`Auteur "${authorName}" supprimé avec succès !`, 'success');
+            loadAuthors();
+        } else {
+            showNotification('Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        showNotification('Erreur lors de la suppression: ' + error.message, 'error');
     }
 } 

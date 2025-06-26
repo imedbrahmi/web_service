@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { run, get, all } = require('../database/db');
 
-const JWT_SECRET = 'votre-secret-jwt-super-securise';
+const JWT_SECRET = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 
 // Fonction de vérification d'autorisation admin
 const requireAdmin = (context) => {

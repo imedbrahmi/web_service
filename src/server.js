@@ -20,13 +20,13 @@ app.use(express.json());
 // Middleware d'authentification
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(' ')[1];
 
   if (!token) {
     return next();
   }
 
-  jwt.verify(token, 'votre-secret-jwt-super-securise', (err, user) => {
+  jwt.verify(token, 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9', (err, user) => {
     if (err) {
       console.log('Token invalide:', err.message);
       return next();
@@ -38,10 +38,8 @@ const authenticateToken = (req, res, next) => {
 
 app.use(authenticateToken);
 
-// Servir les fichiers statiques
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Route de test pour vérifier l'authentification
 app.get('/api/me', (req, res) => {
   if (req.user) {
     res.json({ 
@@ -57,12 +55,10 @@ app.get('/api/me', (req, res) => {
   }
 });
 
-// Créer le serveur Apollo
 const server = new ApolloServer({
   typeDefs,
   resolvers,
   context: ({ req }) => {
-    // Ajouter l'utilisateur au contexte si authentifié
     return {
       user: req.user,
       isAuthenticated: !!req.user
@@ -90,13 +86,13 @@ async function startServer() {
 
     // Démarrer le serveur Express
     app.listen(PORT, () => {
-      console.log(`🚀 Serveur démarré sur http://localhost:${PORT}`);
-      console.log(`📚 GraphQL Playground: http://localhost:${PORT}${server.graphqlPath}`);
-      console.log(`🌐 Interface web: http://localhost:${PORT}`);
+      console.log(`Serveur démarré sur http://localhost:${PORT}`);
+      console.log(`GraphQL Playground: http://localhost:${PORT}${server.graphqlPath}`);
+      console.log(`Interface web: http://localhost:${PORT}`);
     });
 
   } catch (error) {
-    console.error('❌ Erreur lors du démarrage du serveur:', error);
+    console.error('Erreur lors du démarrage du serveur:', error);
     process.exit(1);
   }
 }

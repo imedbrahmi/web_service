@@ -4,10 +4,10 @@ const { initDatabase, run, get } = require('./db');
 async function seedDatabase() {
   try {
     console.log('🌱 Initialisation de la base de données...');
-    await initDatabase();
+    initDatabase();
 
     // Vérifier si des données existent déjà
-    const existingAuthors = await get('SELECT COUNT(*) as count FROM authors');
+    const existingAuthors = get('SELECT COUNT(*) as count FROM authors');
     if (existingAuthors.count > 0) {
       console.log('✅ La base de données contient déjà des données');
       return;
@@ -40,7 +40,7 @@ async function seedDatabase() {
     ];
 
     for (const author of authors) {
-      await run(
+      run(
         'INSERT INTO authors (name, biography, birth_date) VALUES (?, ?, ?)',
         [author.name, author.biography, author.birth_date]
       );
@@ -98,7 +98,7 @@ async function seedDatabase() {
     ];
 
     for (const book of books) {
-      await run(
+      run(
         'INSERT INTO books (title, isbn, author_id, publication_year, genre, description, total_copies, available_copies) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [book.title, book.isbn, book.author_id, book.publication_year, book.genre, book.description, book.total_copies, book.total_copies]
       );
@@ -107,7 +107,7 @@ async function seedDatabase() {
     console.log('👥 Ajout des utilisateurs...');
     
     // Ajouter des utilisateurs
-    const passwordHash = await bcrypt.hash('password123', 10);
+    const passwordHash = bcrypt.hashSync('password123', 10);
     const users = [
       {
         username: 'admin',
@@ -130,7 +130,7 @@ async function seedDatabase() {
     ];
 
     for (const user of users) {
-      await run(
+      run(
         'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
         [user.username, user.email, user.password_hash, user.role]
       );
@@ -153,13 +153,13 @@ async function seedDatabase() {
     ];
 
     for (const loan of loans) {
-      await run(
+      run(
         'INSERT INTO loans (user_id, book_id, due_date) VALUES (?, ?, ?)',
         [loan.user_id, loan.book_id, loan.due_date]
       );
       
       // Mettre à jour le nombre de copies disponibles
-      await run(
+      run(
         'UPDATE books SET available_copies = available_copies - 1 WHERE id = ?',
         [loan.book_id]
       );

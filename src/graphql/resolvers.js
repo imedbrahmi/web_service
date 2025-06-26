@@ -5,13 +5,13 @@ const { run, get, all } = require('../database/db');
 const JWT_SECRET = 'votre-secret-jwt-super-securise';
 
 // Fonction de vérification d'autorisation admin
-const requireAdmin = async (context) => {
+const requireAdmin = (context) => {
   if (!context.user) {
     throw new Error('Authentification requise');
   }
   
   // Récupérer les détails complets de l'utilisateur depuis la base de données
-  const user = await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [context.user.userId]);
+  const user = get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [context.user.userId]);
   if (!user) {
     throw new Error('Utilisateur non trouvé');
   }
@@ -26,17 +26,17 @@ const requireAdmin = async (context) => {
 const resolvers = {
   Query: {
     // Auteurs
-    authors: async () => {
-      return await all('SELECT * FROM authors ORDER BY name');
+    authors: () => {
+      return all('SELECT * FROM authors ORDER BY name');
     },
     
-    author: async (_, { id }) => {
-      return await get('SELECT * FROM authors WHERE id = ?', [id]);
+    author: (_, { id }) => {
+      return get('SELECT * FROM authors WHERE id = ?', [id]);
     },
 
     // Livres
-    books: async () => {
-      return await all(`
+    books: () => {
+      return all(`
         SELECT b.*, a.name as author_name 
         FROM books b 
         LEFT JOIN authors a ON b.author_id = a.id 
@@ -44,8 +44,8 @@ const resolvers = {
       `);
     },
 
-    book: async (_, { id }) => {
-      return await get(`
+    book: (_, { id }) => {
+      return get(`
         SELECT b.*, a.name as author_name 
         FROM books b 
         LEFT JOIN authors a ON b.author_id = a.id 
@@ -53,12 +53,12 @@ const resolvers = {
       `, [id]);
     },
 
-    booksByAuthor: async (_, { authorId }) => {
-      return await all('SELECT * FROM books WHERE author_id = ?', [authorId]);
+    booksByAuthor: (_, { authorId }) => {
+      return all('SELECT * FROM books WHERE author_id = ?', [authorId]);
     },
 
-    searchBooks: async (_, { query }) => {
-      return await all(`
+    searchBooks: (_, { query }) => {
+      return all(`
         SELECT b.*, a.name as author_name 
         FROM books b 
         LEFT JOIN authors a ON b.author_id = a.id 
@@ -67,17 +67,17 @@ const resolvers = {
     },
 
     // Utilisateurs
-    users: async () => {
-      return await all('SELECT id, username, email, role, created_at FROM users');
+    users: () => {
+      return all('SELECT id, username, email, role, created_at FROM users');
     },
 
-    user: async (_, { id }) => {
-      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
+    user: (_, { id }) => {
+      return get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
     },
 
     // Emprunts
-    loans: async () => {
-      return await all(`
+    loans: () => {
+      return all(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
@@ -86,8 +86,8 @@ const resolvers = {
       `);
     },
 
-    loan: async (_, { id }) => {
-      return await get(`
+    loan: (_, { id }) => {
+      return get(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
@@ -96,8 +96,8 @@ const resolvers = {
       `, [id]);
     },
 
-    userLoans: async (_, { userId }) => {
-      return await all(`
+    userLoans: (_, { userId }) => {
+      return all(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
@@ -107,8 +107,8 @@ const resolvers = {
       `, [userId]);
     },
 
-    activeLoans: async () => {
-      return await all(`
+    activeLoans: () => {
+      return all(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
@@ -121,75 +121,75 @@ const resolvers = {
 
   Mutation: {
     // Auteurs
-    createAuthor: async (_, { input }) => {
-      const result = await run(
+    createAuthor: (_, { input }) => {
+      const result = run(
         'INSERT INTO authors (name, biography, birth_date) VALUES (?, ?, ?)',
         [input.name, input.biography, input.birth_date]
       );
-      return await get('SELECT * FROM authors WHERE id = ?', [result.id]);
+      return get('SELECT * FROM authors WHERE id = ?', [result.lastInsertRowid]);
     },
 
-    updateAuthor: async (_, { id, input }) => {
-      await run(
+    updateAuthor: (_, { id, input }) => {
+      run(
         'UPDATE authors SET name = ?, biography = ?, birth_date = ? WHERE id = ?',
         [input.name, input.biography, input.birth_date, id]
       );
-      return await get('SELECT * FROM authors WHERE id = ?', [id]);
+      return get('SELECT * FROM authors WHERE id = ?', [id]);
     },
 
-    deleteAuthor: async (_, { id }) => {
-      const result = await run('DELETE FROM authors WHERE id = ?', [id]);
+    deleteAuthor: (_, { id }) => {
+      const result = run('DELETE FROM authors WHERE id = ?', [id]);
       return result.changes > 0;
     },
 
     // Livres
-    createBook: async (_, { input }) => {
-      const result = await run(
+    createBook: (_, { input }) => {
+      const result = run(
         'INSERT INTO books (title, isbn, author_id, publication_year, genre, description, total_copies, available_copies) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
         [input.title, input.isbn, input.author_id, input.publication_year, input.genre, input.description, input.total_copies, input.total_copies]
       );
-      return await get('SELECT * FROM books WHERE id = ?', [result.id]);
+      return get('SELECT * FROM books WHERE id = ?', [result.lastInsertRowid]);
     },
 
-    updateBook: async (_, { id, input }) => {
-      await run(
+    updateBook: (_, { id, input }) => {
+      run(
         'UPDATE books SET title = ?, isbn = ?, author_id = ?, publication_year = ?, genre = ?, description = ?, total_copies = ? WHERE id = ?',
         [input.title, input.isbn, input.author_id, input.publication_year, input.genre, input.description, input.total_copies, id]
       );
-      return await get('SELECT * FROM books WHERE id = ?', [id]);
+      return get('SELECT * FROM books WHERE id = ?', [id]);
     },
 
-    deleteBook: async (_, { id }) => {
-      const result = await run('DELETE FROM books WHERE id = ?', [id]);
+    deleteBook: (_, { id }) => {
+      const result = run('DELETE FROM books WHERE id = ?', [id]);
       return result.changes > 0;
     },
 
     // Utilisateurs
-    register: async (_, { input }) => {
-      const existingUser = await get('SELECT * FROM users WHERE email = ?', [input.email]);
+    register: (_, { input }) => {
+      const existingUser = get('SELECT * FROM users WHERE email = ?', [input.email]);
       if (existingUser) {
         throw new Error('Un utilisateur avec cet email existe déjà');
       }
 
-      const passwordHash = await bcrypt.hash(input.password, 10);
-      const result = await run(
+      const passwordHash = bcrypt.hashSync(input.password, 10);
+      const result = run(
         'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
         [input.username, input.email, passwordHash, 'user']
       );
       
-      const user = await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.id]);
+      const user = get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
       const token = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '24h' });
       
       return { token, user };
     },
 
-    login: async (_, { input }) => {
-      const user = await get('SELECT * FROM users WHERE email = ?', [input.email]);
+    login: (_, { input }) => {
+      const user = get('SELECT * FROM users WHERE email = ?', [input.email]);
       if (!user) {
         throw new Error('Utilisateur non trouvé');
       }
 
-      const validPassword = await bcrypt.compare(input.password, user.password_hash);
+      const validPassword = bcrypt.compareSync(input.password, user.password_hash);
       if (!validPassword) {
         throw new Error('Mot de passe incorrect');
       }
@@ -200,31 +200,31 @@ const resolvers = {
       return { token, user: userWithoutPassword };
     },
 
-    createUser: async (_, { input }, context) => {
+    createUser: (_, { input }, context) => {
       // Vérifier l'autorisation admin
-      await requireAdmin(context);
+      requireAdmin(context);
       
       // Vérifier si l'email existe déjà
-      const existingUser = await get('SELECT * FROM users WHERE email = ?', [input.email]);
+      const existingUser = get('SELECT * FROM users WHERE email = ?', [input.email]);
       if (existingUser) {
         throw new Error('Un utilisateur avec cet email existe déjà');
       }
 
-      const passwordHash = await bcrypt.hash(input.password, 10);
-      const result = await run(
+      const passwordHash = bcrypt.hashSync(input.password, 10);
+      const result = run(
         'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
         [input.username, input.email, passwordHash, input.role || 'user']
       );
       
-      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.id]);
+      return get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.lastInsertRowid]);
     },
 
-    updateUser: async (_, { id, input }, context) => {
+    updateUser: (_, { id, input }, context) => {
       // Vérifier l'autorisation admin
-      await requireAdmin(context);
+      requireAdmin(context);
       
       // Vérifier si l'utilisateur existe
-      const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
+      const existingUser = get('SELECT * FROM users WHERE id = ?', [id]);
       if (!existingUser) {
         throw new Error('Utilisateur non trouvé');
       }
@@ -249,7 +249,7 @@ const resolvers = {
       }
 
       if (input.password) {
-        const passwordHash = await bcrypt.hash(input.password, 10);
+        const passwordHash = bcrypt.hashSync(input.password, 10);
         updates.push('password_hash = ?');
         values.push(passwordHash);
       }
@@ -259,35 +259,35 @@ const resolvers = {
       }
 
       values.push(id);
-      await run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
+      run(`UPDATE users SET ${updates.join(', ')} WHERE id = ?`, values);
 
-      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
+      return get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
     },
 
-    deleteUser: async (_, { id }, context) => {
+    deleteUser: (_, { id }, context) => {
       // Vérifier l'autorisation admin
-      await requireAdmin(context);
+      requireAdmin(context);
       
       // Vérifier si l'utilisateur existe
-      const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
+      const existingUser = get('SELECT * FROM users WHERE id = ?', [id]);
       if (!existingUser) {
         throw new Error('Utilisateur non trouvé');
       }
 
       // Vérifier s'il a des emprunts actifs
-      const activeLoans = await get('SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND status = "active"', [id]);
+      const activeLoans = get('SELECT COUNT(*) as count FROM loans WHERE user_id = ? AND status = "active"', [id]);
       if (activeLoans.count > 0) {
         throw new Error('Impossible de supprimer un utilisateur avec des emprunts actifs');
       }
 
-      const result = await run('DELETE FROM users WHERE id = ?', [id]);
+      const result = run('DELETE FROM users WHERE id = ?', [id]);
       return result.changes > 0;
     },
 
     // Emprunts
-    borrowBook: async (_, { userId, bookId, loanDate, dueDate }) => {
+    borrowBook: (_, { userId, bookId, loanDate, dueDate }) => {
       // Vérifier si le livre est disponible
-      const book = await get('SELECT * FROM books WHERE id = ?', [bookId]);
+      const book = get('SELECT * FROM books WHERE id = ?', [bookId]);
       if (!book) {
         throw new Error('Livre non trouvé');
       }
@@ -300,29 +300,29 @@ const resolvers = {
       let dueDateObj = dueDate ? new Date(dueDate) : new Date(loanDateObj.getTime() + 14 * 24 * 60 * 60 * 1000);
 
       // Créer l'emprunt
-      const result = await run(
+      const result = run(
         'INSERT INTO loans (user_id, book_id, loan_date, due_date) VALUES (?, ?, ?, ?)',
         [userId, bookId, loanDateObj.toISOString(), dueDateObj.toISOString()]
       );
 
       // Mettre à jour le nombre de copies disponibles
-      await run(
+      run(
         'UPDATE books SET available_copies = available_copies - 1 WHERE id = ?',
         [bookId]
       );
 
-      return await get(`
+      return get(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
         JOIN books b ON l.book_id = b.id 
         WHERE l.id = ?
-      `, [result.id]);
+      `, [result.lastInsertRowid]);
     },
 
-    returnBook: async (_, { loanId }) => {
+    returnBook: (_, { loanId }) => {
       // Récupérer l'emprunt
-      const loan = await get('SELECT * FROM loans WHERE id = ?', [loanId]);
+      const loan = get('SELECT * FROM loans WHERE id = ?', [loanId]);
       if (!loan) {
         throw new Error('Emprunt non trouvé');
       }
@@ -331,18 +331,18 @@ const resolvers = {
       }
 
       // Marquer comme retourné
-      await run(
+      run(
         'UPDATE loans SET return_date = ?, status = ? WHERE id = ?',
         [new Date().toISOString(), 'returned', loanId]
       );
 
       // Mettre à jour le nombre de copies disponibles
-      await run(
+      run(
         'UPDATE books SET available_copies = available_copies + 1 WHERE id = ?',
         [loan.book_id]
       );
 
-      return await get(`
+      return get(`
         SELECT l.*, u.username, b.title 
         FROM loans l 
         JOIN users u ON l.user_id = u.id 
@@ -354,32 +354,32 @@ const resolvers = {
 
   // Resolvers pour les relations
   Author: {
-    books: async (parent) => {
-      return await all('SELECT * FROM books WHERE author_id = ?', [parent.id]);
+    books: (parent) => {
+      return all('SELECT * FROM books WHERE author_id = ?', [parent.id]);
     }
   },
 
   Book: {
-    author: async (parent) => {
-      return await get('SELECT * FROM authors WHERE id = ?', [parent.author_id]);
+    author: (parent) => {
+      return get('SELECT * FROM authors WHERE id = ?', [parent.author_id]);
     },
-    loans: async (parent) => {
-      return await all('SELECT * FROM loans WHERE book_id = ?', [parent.id]);
+    loans: (parent) => {
+      return all('SELECT * FROM loans WHERE book_id = ?', [parent.id]);
     }
   },
 
   User: {
-    loans: async (parent) => {
-      return await all('SELECT * FROM loans WHERE user_id = ?', [parent.id]);
+    loans: (parent) => {
+      return all('SELECT * FROM loans WHERE user_id = ?', [parent.id]);
     }
   },
 
   Loan: {
-    user: async (parent) => {
-      return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [parent.user_id]);
+    user: (parent) => {
+      return get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [parent.user_id]);
     },
-    book: async (parent) => {
-      return await get('SELECT * FROM books WHERE id = ?', [parent.book_id]);
+    book: (parent) => {
+      return get('SELECT * FROM books WHERE id = ?', [parent.book_id]);
     }
   }
 };

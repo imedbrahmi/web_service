@@ -1,118 +1,92 @@
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const path = require('path');
 
-// Créer la connexion à la base de données
-const dbPath = path.join(__dirname, '../../database/bibliotheque.db');
-const db = new sqlite3.Database(dbPath);
+let db;
 
-// Initialiser les tables
-const initDatabase = () => {
-  return new Promise((resolve, reject) => {
-    db.serialize(() => {
-      // Table des auteurs
-      db.run(`
-        CREATE TABLE IF NOT EXISTS authors (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT NOT NULL,
-          biography TEXT,
-          birth_date TEXT,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+function initDatabase() {
+  const dbPath = path.join(__dirname, '../../database/bibliotheque.db');
+  db = new Database(dbPath);
+  
+  // Activer les clés étrangères
+  db.pragma('foreign_keys = ON');
+  
+  // Créer les tables si elles n'existent pas
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS authors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      biography TEXT,
+      birth_date TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
 
-      // Table des livres
-      db.run(`
-        CREATE TABLE IF NOT EXISTS books (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          title TEXT NOT NULL,
-          isbn TEXT UNIQUE,
-          author_id INTEGER,
-          publication_year INTEGER,
-          genre TEXT,
-          description TEXT,
-          available_copies INTEGER DEFAULT 1,
-          total_copies INTEGER DEFAULT 1,
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (author_id) REFERENCES authors (id)
-        )
-      `);
+    CREATE TABLE IF NOT EXISTS books (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      isbn TEXT UNIQUE,
+      author_id INTEGER,
+      publication_year INTEGER,
+      genre TEXT,
+      description TEXT,
+      total_copies INTEGER DEFAULT 1,
+      available_copies INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (author_id) REFERENCES authors (id)
+    );
 
-      // Table des utilisateurs
-      db.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          username TEXT UNIQUE NOT NULL,
-          email TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          role TEXT DEFAULT 'user',
-          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )
-      `);
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      username TEXT NOT NULL,
+      email TEXT UNIQUE NOT NULL,
+      password_hash TEXT NOT NULL,
+      role TEXT DEFAULT 'user',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
 
-      // Table des emprunts
-      db.run(`
-        CREATE TABLE IF NOT EXISTS loans (
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          book_id INTEGER NOT NULL,
-          loan_date DATETIME DEFAULT CURRENT_TIMESTAMP,
-          return_date DATETIME,
-          due_date DATETIME,
-          status TEXT DEFAULT 'active',
-          FOREIGN KEY (user_id) REFERENCES users (id),
-          FOREIGN KEY (book_id) REFERENCES books (id)
-        )
-      `, (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
-      });
-    });
-  });
-};
+    CREATE TABLE IF NOT EXISTS loans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      book_id INTEGER NOT NULL,
+      loan_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+      return_date DATETIME,
+      due_date DATETIME,
+      status TEXT DEFAULT 'active',
+      FOREIGN KEY (user_id) REFERENCES users (id),
+      FOREIGN KEY (book_id) REFERENCES books (id)
+    );
+  `);
+  
+  console.log('✅ Base de données initialisée');
+  return db;
+}
 
-// Fonctions utilitaires pour la base de données
-const run = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
-      if (err) {
-        reject(err);
-      } else {
-        resolve({ id: this.lastID, changes: this.changes });
-      }
-    });
-  });
-};
+function getDatabase() {
+  if (!db) {
+    throw new Error('Base de données non initialisée. Appelez initDatabase() d\'abord.');
+  }
+  return db;
+}
 
-const get = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.get(sql, params, (err, row) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(row);
-      }
-    });
-  });
-};
+// Fonctions utilitaires pour les requêtes
+function run(sql, params = []) {
+  const stmt = getDatabase().prepare(sql);
+  const result = stmt.run(params);
+  return result;
+}
 
-const all = (sql, params = []) => {
-  return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
-    });
-  });
-};
+function get(sql, params = []) {
+  const stmt = getDatabase().prepare(sql);
+  return stmt.get(params);
+}
+
+function all(sql, params = []) {
+  const stmt = getDatabase().prepare(sql);
+  return stmt.all(params);
+}
 
 module.exports = {
-  db,
   initDatabase,
+  getDatabase,
   run,
   get,
   all

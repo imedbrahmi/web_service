@@ -81,7 +81,7 @@ const server = new ApolloServer({
 async function startServer() {
   try {
     // Initialiser la base de données
-    await initDatabase();
+    initDatabase();
     console.log('✅ Base de données initialisée');
 
     // Démarrer Apollo Server

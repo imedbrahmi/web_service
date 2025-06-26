@@ -690,6 +690,96 @@ body {
     font-size: 1.1rem;
 }
 
+/* Profile Card (Simple, Clean, No Avatar) */
+.profile-card {
+    max-width: 400px;
+    margin: 40px auto 0 auto;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.10);
+    padding: 32px 28px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    color: #333;
+    border: 1px solid #eee;
+}
+
+.profile-details {
+    width: 100%;
+    text-align: left;
+}
+
+.profile-details h3 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+    color: #333;
+    letter-spacing: 0.5px;
+}
+
+.profile-details p {
+    margin-bottom: 10px;
+    color: #555;
+    font-size: 1.05rem;
+    opacity: 1;
+}
+
+.profile-details i {
+    color: #667eea;
+    margin-right: 7px;
+}
+
+.profile-actions {
+    margin-top: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.profile-actions .btn {
+    min-width: 120px;
+    justify-content: center;
+    font-size: 1rem;
+    border-radius: 8px;
+    box-shadow: none;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
+}
+
+.profile-actions .btn-outline {
+    border: 2px solid #667eea;
+    color: #667eea;
+    background: transparent;
+}
+
+.profile-actions .btn-outline:hover {
+    background: #667eea;
+    color: #fff;
+}
+
+.profile-actions .btn-primary {
+    background: #667eea;
+    color: #fff;
+    border: 2px solid #667eea;
+}
+
+.profile-actions .btn-primary:hover {
+    background: #5a6fd8;
+    color: #fff;
+    border-color: #5a6fd8;
+}
+
+.profile-actions .btn-danger {
+    background: #dc3545;
+    color: #fff;
+    border: 2px solid #dc3545;
+}
+
+.profile-actions .btn-danger:hover {
+    background: #fff;
+    color: #dc3545;
+}
+
 /* Modal */
 .modal {
     display: none;
@@ -821,4 +911,4 @@ body {
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-} 
+}

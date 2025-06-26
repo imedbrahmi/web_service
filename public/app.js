@@ -931,12 +931,15 @@ function checkAuthStatus() {
         
         if (userInfo) {
             userInfo.innerHTML = `
-                <h3>Profil de ${currentUser.username}</h3>
-                <p><strong>Email:</strong> ${currentUser.email}</p>
-                <p><strong>Rôle:</strong> ${currentUser.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</p>
-                <button id="logoutBtn" class="btn btn-danger">Se déconnecter</button>
+                <div style="max-width:420px;margin:40px auto 0 auto;background:#fafbfc;border-radius:12px;box-shadow:0 4px 24px rgba(0,0,0,0.10);padding:32px 28px 24px 28px;">
+                    <h3 style='margin-bottom:18px;font-size:1.35rem;color:#222;font-weight:600;letter-spacing:0.5px;'>${currentUser.username}</h3>
+                    <p style='margin-bottom:12px;color:#333;font-size:1.08rem;'><i class='fas fa-envelope' style='color:#667eea;margin-right:8px;'></i>${currentUser.email}</p>
+                    <p style='margin-bottom:18px;color:#333;font-size:1.08rem;'><i class='fas fa-user-tag' style='color:#667eea;margin-right:8px;'></i>${currentUser.role === 'admin' ? 'Administrateur' : 'Utilisateur'}</p>
+                    <div style='margin-top:10px;text-align:right;'>
+                        <button id="logoutBtn" class="btn btn-danger" style="min-width:140px;font-size:1rem;">Se déconnecter</button>
+                    </div>
+                </div>
             `;
-            
             // Ajouter l'event listener pour le bouton de déconnexion
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
@@ -1698,4 +1701,4 @@ function attachHomeStatsListeners() {
     if (statUsers) statUsers.onclick = () => showSection('users');
     if (statLoans) statLoans.onclick = () => showSection('loans');
     if (statAuthors) statAuthors.onclick = () => showSection('authors');
-} 
+}

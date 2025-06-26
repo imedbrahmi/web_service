@@ -251,10 +251,21 @@ app.get('/api', (req, res) => {
         <div class="container">
             <h1>📚 Documentation API GraphQL</h1>
             
-            <h2>🔍 Queries disponibles</h2>
+            <!-- Section d'introduction -->
+            <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="margin-top: 0; color: #1976d2;">ℹ️ Guide d'utilisation</h3>
+                <p>Cette API GraphQL permet de gérer une bibliothèque complète avec des livres, auteurs, utilisateurs et emprunts. 
+                Utilisez GraphQL Playground pour tester les requêtes et mutations interactivement.</p>
+                <p><strong>Endpoint GraphQL :</strong> <code>/graphql</code></p>
+            </div>
             
+            <h2>🔍 Queries disponibles</h2>
+            <p style="color: #666; margin-bottom: 20px;">Les queries permettent de récupérer des données sans les modifier.</p>
+            
+            <!-- Query: Récupérer tous les livres -->
             <div class="query">
-                <h3>Récupérer tous les livres</h3>
+                <h3>📖 Récupérer tous les livres</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère la liste complète des livres avec leurs informations de base et l'auteur associé.</p>
                 <pre><code>query {
   books {
     id
@@ -268,8 +279,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Query: Rechercher des livres -->
             <div class="query">
-                <h3>Rechercher des livres</h3>
+                <h3>🔎 Rechercher des livres</h3>
+                <p style="color: #666; font-size: 0.9em;">Recherche des livres par titre ou nom d'auteur. La recherche est insensible à la casse.</p>
                 <pre><code>query {
   searchBooks(query: "Harry Potter") {
     id
@@ -281,8 +294,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Query: Emprunts actifs -->
             <div class="query">
-                <h3>Récupérer les emprunts actifs</h3>
+                <h3>📋 Récupérer les emprunts actifs</h3>
+                <p style="color: #666; font-size: 0.9em;">Liste tous les emprunts en cours (non retournés) avec les détails de l'utilisateur et du livre.</p>
                 <pre><code>query {
   activeLoans {
     id
@@ -298,8 +313,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Query: Liste des auteurs -->
             <div class="query">
-                <h3>Liste de tous les auteurs</h3>
+                <h3>✍️ Liste de tous les auteurs</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère tous les auteurs avec leurs informations biographiques.</p>
                 <pre><code>query {
   authors {
     id
@@ -310,8 +327,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Détail d'un auteur -->
             <div class="query">
-                <h3>Détail d'un auteur</h3>
+                <h3>👤 Détail d'un auteur</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère les détails d'un auteur spécifique avec la liste de tous ses livres.</p>
                 <pre><code>query {
   author(id: 1) {
     id
@@ -326,8 +346,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Détail d'un livre -->
             <div class="query">
-                <h3>Détail d'un livre</h3>
+                <h3>📚 Détail d'un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère toutes les informations d'un livre spécifique avec son auteur.</p>
                 <pre><code>query {
   book(id: 1) {
     id
@@ -345,8 +368,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Livres d'un auteur -->
             <div class="query">
-                <h3>Livres d'un auteur</h3>
+                <h3>📚 Livres d'un auteur</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère tous les livres écrits par un auteur spécifique.</p>
                 <pre><code>query {
   booksByAuthor(authorId: 1) {
     id
@@ -356,8 +382,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
-            <div class="query">
-                <h3>Liste de tous les utilisateurs</h3>
+            
+            <!-- Query: Liste des utilisateurs (Admin) -->
+            <div class="query" style="border-left: 4px solid #ff9800; background: #fff8e1;">
+                <h3>👥 Liste de tous les utilisateurs</h3>
+                <p style="color: #666; font-size: 0.9em;">⚠️ <strong>Réservé aux administrateurs</strong> - Récupère la liste de tous les utilisateurs inscrits.</p>
                 <pre><code>query {
   users {
     id
@@ -368,8 +397,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
-            <div class="query">
-                <h3>Détail d'un utilisateur</h3>
+            
+            <!-- Query: Détail d'un utilisateur (Admin) -->
+            <div class="query" style="border-left: 4px solid #ff9800; background: #fff8e1;">
+                <h3>👤 Détail d'un utilisateur</h3>
+                <p style="color: #666; font-size: 0.9em;">⚠️ <strong>Réservé aux administrateurs</strong> - Récupère les détails d'un utilisateur spécifique.</p>
                 <pre><code>query {
   user(id: 1) {
     id
@@ -380,8 +412,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Liste des emprunts -->
             <div class="query">
-                <h3>Liste de tous les emprunts</h3>
+                <h3>📋 Liste de tous les emprunts</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère l'historique complet des emprunts avec les détails des utilisateurs et livres.</p>
                 <pre><code>query {
   loans {
     id
@@ -394,8 +429,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Détail d'un emprunt -->
             <div class="query">
-                <h3>Détail d'un emprunt</h3>
+                <h3>📋 Détail d'un emprunt</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère les détails complets d'un emprunt spécifique.</p>
                 <pre><code>query {
   loan(id: 1) {
     id
@@ -408,8 +446,11 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Query: Emprunts d'un utilisateur -->
             <div class="query">
-                <h3>Emprunts d'un utilisateur</h3>
+                <h3>📋 Emprunts d'un utilisateur</h3>
+                <p style="color: #666; font-size: 0.9em;">Récupère l'historique des emprunts d'un utilisateur spécifique.</p>
                 <pre><code>query {
   userLoans(userId: 1) {
     id
@@ -423,9 +464,49 @@ app.get('/api', (req, res) => {
             </div>
             
             <h2>✏️ Mutations disponibles</h2>
+            <p style="color: #666; margin-bottom: 20px;">Les mutations permettent de créer, modifier ou supprimer des données dans la base de données.</p>
             
+            <!-- Section Authentification Admin -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 30px; border-left: 4px solid #007bff;">
+                <h3 style="color: #007bff; margin-top: 0;">🔐 Authentification Admin</h3>
+                <p><strong>Certaines mutations nécessitent une authentification admin :</strong></p>
+                <ul>
+                    <li><code>createUser</code> - Créer un nouvel utilisateur</li>
+                    <li><code>updateUser</code> - Modifier un utilisateur existant</li>
+                    <li><code>deleteUser</code> - Supprimer un utilisateur</li>
+                </ul>
+                
+                <h4>Comment obtenir un token admin :</h4>
+                <pre><code>mutation {
+  login(input: {
+    email: "admin@bibliotheque.com"
+    password: "password123"
+  }) {
+    token
+    user {
+      id
+      username
+      role
+    }
+  }
+}</code></pre>
+                
+                <h4>Utiliser le token dans les en-têtes :</h4>
+                <pre><code>Headers: {
+  "Authorization": "Bearer <votre-token-jwt>"
+}</code></pre>
+                
+                <p style="margin-bottom: 0;"><strong>Utilisateurs de test :</strong></p>
+                <ul style="margin-bottom: 0;">
+                    <li>Admin : <code>admin@bibliotheque.com</code> / <code>password123</code></li>
+                    <li>Utilisateur : <code>john@example.com</code> / <code>password123</code></li>
+                </ul>
+            </div>
+            
+            <!-- Mutation: Créer un auteur -->
             <div class="mutation">
-                <h3>Créer un auteur</h3>
+                <h3>✍️ Créer un auteur</h3>
+                <p style="color: #666; font-size: 0.9em;">Ajoute un nouvel auteur à la base de données. Tous les champs sont obligatoires sauf biography et birth_date.</p>
                 <pre><code>mutation {
   createAuthor(input: {
     name: "J.K. Rowling"
@@ -438,8 +519,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Mutation: Créer un livre -->
             <div class="mutation">
-                <h3>Créer un livre</h3>
+                <h3>📖 Créer un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Ajoute un nouveau livre à la bibliothèque. L'auteur doit exister dans la base de données.</p>
                 <pre><code>mutation {
   createBook(input: {
     title: "Harry Potter à l'école des sorciers"
@@ -457,8 +540,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Mutation: Emprunter un livre -->
             <div class="mutation">
-                <h3>Emprunter un livre</h3>
+                <h3>📚 Emprunter un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Crée un nouvel emprunt. Vérifie automatiquement la disponibilité du livre et met à jour le stock.</p>
                 <pre><code>mutation {
   borrowBook(userId: "1", bookId: "1") {
     id
@@ -470,8 +555,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Mutation: Retourner un livre -->
             <div class="mutation">
-                <h3>Retourner un livre</h3>
+                <h3>📚 Retourner un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Marque un emprunt comme retourné et incrémente le nombre de copies disponibles.</p>
                 <pre><code>mutation {
   returnBook(loanId: "1") {
     id
@@ -481,8 +568,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Mutation: S'inscrire -->
             <div class="mutation">
-                <h3>S'inscrire</h3>
+                <h3>👤 S'inscrire</h3>
+                <p style="color: #666; font-size: 0.9em;">Crée un nouveau compte utilisateur et retourne un token JWT pour l'authentification automatique.</p>
                 <pre><code>mutation {
   register(input: {
     username: "john_doe"
@@ -498,8 +587,10 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
+            <!-- Mutation: Se connecter -->
             <div class="mutation">
-                <h3>Se connecter</h3>
+                <h3>🔑 Se connecter</h3>
+                <p style="color: #666; font-size: 0.9em;">Authentifie un utilisateur existant et retourne un token JWT valide pour 24h.</p>
                 <pre><code>mutation {
   login(input: {
     email: "john@example.com"
@@ -514,14 +605,17 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
-            <div class="mutation">
-                <h3>Créer un utilisateur (Admin)</h3>
+            <!-- Mutation: Créer un utilisateur (Administareur) -->
+            <div class="mutation" style="border-left: 4px solid #dc3545; background: #fff5f5;">
+                <h3>🔒 Créer un utilisateur (Admin uniquement)</h3>
+                <p style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">⚠️ Nécessite une authentification admin</p>
+                <p style="color: #666; font-size: 0.9em;">Permet à un administrateur de créer un nouveau compte utilisateur avec un rôle spécifique.</p>
                 <pre><code>mutation {
   createUser(input: {
     username: "new_user"
     email: "newuser@example.com"
     password: "password123"
-    role: "user"
+    role: "admin"
   }) {
     id
     username
@@ -531,8 +625,11 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
-            <div class="mutation">
-                <h3>Modifier un utilisateur</h3>
+            <!-- Mutation: Modifier un utilisateur (Admin) -->
+            <div class="mutation" style="border-left: 4px solid #dc3545; background: #fff5f5;">
+                <h3>🔒 Modifier un utilisateur (Admin uniquement)</h3>
+                <p style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">⚠️ Nécessite une authentification admin</p>
+                <p style="color: #666; font-size: 0.9em;">Modifie les informations d'un utilisateur existant. Seuls les champs fournis seront mis à jour.</p>
                 <pre><code>mutation {
   updateUser(id: 1, input: {
     username: "updated_username"
@@ -548,15 +645,20 @@ app.get('/api', (req, res) => {
 }</code></pre>
             </div>
             
-            <div class="mutation">
-                <h3>Supprimer un utilisateur</h3>
+            <!-- Mutation: Supprimer un utilisateur (Admin) -->
+            <div class="mutation" style="border-left: 4px solid #dc3545; background: #fff5f5;">
+                <h3>🔒 Supprimer un utilisateur (Admin uniquement)</h3>
+                <p style="color: #dc3545; font-weight: bold; margin-bottom: 10px;">⚠️ Nécessite une authentification admin</p>
+                <p style="color: #666; font-size: 0.9em;">Supprime un utilisateur de la base de données. Impossible si l'utilisateur a des emprunts actifs.</p>
                 <pre><code>mutation {
   deleteUser(id: 1)
 }</code></pre>
             </div>
             
+            <!-- Mutation: Modifier un auteur -->
             <div class="mutation">
-                <h3>Modifier un auteur</h3>
+                <h3>✍️ Modifier un auteur</h3>
+                <p style="color: #666; font-size: 0.9em;">Met à jour les informations d'un auteur existant. Tous les champs sont obligatoires.</p>
                 <pre><code>mutation {
   updateAuthor(id: 1, input: {
     name: "Nom modifié"
@@ -570,14 +672,20 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Mutation: Supprimer un auteur -->
             <div class="mutation">
-                <h3>Supprimer un auteur</h3>
+                <h3>✍️ Supprimer un auteur</h3>
+                <p style="color: #666; font-size: 0.9em;">Supprime un auteur de la base de données. Attention : peut affecter les livres associés.</p>
                 <pre><code>mutation {
   deleteAuthor(id: 1)
 }</code></pre>
             </div>
+            
+            <!-- Mutation: Modifier un livre -->
             <div class="mutation">
-                <h3>Modifier un livre</h3>
+                <h3>📖 Modifier un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Met à jour les informations d'un livre existant. Seuls les champs fournis seront modifiés.</p>
                 <pre><code>mutation {
   updateBook(id: 1, input: {
     title: "Titre modifié"
@@ -591,11 +699,114 @@ app.get('/api', (req, res) => {
   }
 }</code></pre>
             </div>
+            
+            <!-- Mutation: Supprimer un livre -->
             <div class="mutation">
-                <h3>Supprimer un livre</h3>
+                <h3>📖 Supprimer un livre</h3>
+                <p style="color: #666; font-size: 0.9em;">Supprime un livre de la bibliothèque. Attention : peut affecter les emprunts associés.</p>
                 <pre><code>mutation {
   deleteBook(id: 1)
 }</code></pre>
+            </div>
+            
+            <!-- Section Informations Utiles -->
+            <div style="background: #f1f8e9; padding: 20px; border-radius: 8px; margin-top: 30px; border-left: 4px solid #4caf50;">
+                <h3 style="color: #2e7d32; margin-top: 0;">💡 Conseils d'utilisation</h3>
+                
+                <h4>🔧 GraphQL Playground</h4>
+                <p>Utilisez <a href="/graphql" style="color: #4caf50;">GraphQL Playground</a> pour tester les requêtes et mutations de manière interactive. 
+                C'est l'outil idéal pour explorer l'API et comprendre les schémas de données.</p>
+                
+                <h4>🔐 Gestion des Tokens</h4>
+                <ul>
+                    <li>Les tokens JWT expirent après 24h</li>
+                    <li>Stockez le token dans le localStorage pour les applications web</li>
+                    <li>Incluez le token dans l'en-tête <code>Authorization: Bearer &lt;token&gt;</code></li>
+                </ul>
+                
+                <h4>⚠️ Gestion des Erreurs</h4>
+                <ul>
+                    <li><strong>Authentification requise</strong> : Token manquant ou invalide</li>
+                    <li><strong>Autorisation admin requise</strong> : Utilisateur connecté mais pas admin</li>
+                    <li><strong>Validation des données</strong> : Vérifiez les champs obligatoires</li>
+                    <li><strong>Contraintes de base de données</strong> : ISBN unique, emails uniques</li>
+                </ul>
+                
+                <h4>📊 Exemples d'Utilisation Avancée</h4>
+                <p><strong>Recherche avec filtres :</strong></p>
+                <pre><code>query {
+  searchBooks(query: "fantasy") {
+    id
+    title
+    author { name }
+    available_copies
+    genre
+  }
+}</code></pre>
+                
+                <p><strong>Emprunts avec détails complets :</strong></p>
+                <pre><code>query {
+  activeLoans {
+    id
+    loan_date
+    due_date
+    user {
+      username
+      email
+    }
+    book {
+      title
+      author { name }
+      isbn
+    }
+  }
+}</code></pre>
+            </div>
+            
+            <!-- Section Structure des Données -->
+            <div style="background: #fff3e0; padding: 20px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #ff9800;">
+                <h3 style="color: #e65100; margin-top: 0;">📋 Structure des Données</h3>
+                
+                <h4>📚 Livre (Book)</h4>
+                <ul>
+                    <li><code>id</code> : Identifiant unique</li>
+                    <li><code>title</code> : Titre du livre</li>
+                    <li><code>isbn</code> : Code ISBN (unique)</li>
+                    <li><code>author_id</code> : Référence vers l'auteur</li>
+                    <li><code>publication_year</code> : Année de publication</li>
+                    <li><code>genre</code> : Genre littéraire</li>
+                    <li><code>description</code> : Description du livre</li>
+                    <li><code>total_copies</code> : Nombre total d'exemplaires</li>
+                    <li><code>available_copies</code> : Exemplaires disponibles</li>
+                </ul>
+                
+                <h4>✍️ Auteur (Author)</h4>
+                <ul>
+                    <li><code>id</code> : Identifiant unique</li>
+                    <li><code>name</code> : Nom de l'auteur</li>
+                    <li><code>biography</code> : Biographie (optionnel)</li>
+                    <li><code>birth_date</code> : Date de naissance (optionnel)</li>
+                </ul>
+                
+                <h4>👤 Utilisateur (User)</h4>
+                <ul>
+                    <li><code>id</code> : Identifiant unique</li>
+                    <li><code>username</code> : Nom d'utilisateur</li>
+                    <li><code>email</code> : Email (unique)</li>
+                    <li><code>role</code> : Rôle (user/admin)</li>
+                    <li><code>password_hash</code> : Mot de passe haché (non visible)</li>
+                </ul>
+                
+                <h4>📋 Emprunt (Loan)</h4>
+                <ul>
+                    <li><code>id</code> : Identifiant unique</li>
+                    <li><code>user_id</code> : Référence vers l'utilisateur</li>
+                    <li><code>book_id</code> : Référence vers le livre</li>
+                    <li><code>loan_date</code> : Date d'emprunt</li>
+                    <li><code>due_date</code> : Date de retour prévue</li>
+                    <li><code>return_date</code> : Date de retour effective (si retourné)</li>
+                    <li><code>status</code> : Statut (active/returned)</li>
+                </ul>
             </div>
             
             <p style="margin-top: 30px; text-align: center;">

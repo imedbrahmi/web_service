@@ -4,6 +4,25 @@ const { run, get, all } = require('../database/db');
 
 const JWT_SECRET = 'votre-secret-jwt-super-securise';
 
+// Fonction de vérification d'autorisation admin
+const requireAdmin = async (context) => {
+  if (!context.user) {
+    throw new Error('Authentification requise');
+  }
+  
+  // Récupérer les détails complets de l'utilisateur depuis la base de données
+  const user = await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [context.user.userId]);
+  if (!user) {
+    throw new Error('Utilisateur non trouvé');
+  }
+  
+  if (user.role !== 'admin') {
+    throw new Error('Autorisation admin requise');
+  }
+  
+  return user;
+};
+
 const resolvers = {
   Query: {
     // Auteurs
@@ -181,7 +200,10 @@ const resolvers = {
       return { token, user: userWithoutPassword };
     },
 
-    createUser: async (_, { input }) => {
+    createUser: async (_, { input }, context) => {
+      // Vérifier l'autorisation admin
+      await requireAdmin(context);
+      
       // Vérifier si l'email existe déjà
       const existingUser = await get('SELECT * FROM users WHERE email = ?', [input.email]);
       if (existingUser) {
@@ -197,7 +219,10 @@ const resolvers = {
       return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [result.id]);
     },
 
-    updateUser: async (_, { id, input }) => {
+    updateUser: async (_, { id, input }, context) => {
+      // Vérifier l'autorisation admin
+      await requireAdmin(context);
+      
       // Vérifier si l'utilisateur existe
       const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
       if (!existingUser) {
@@ -239,7 +264,10 @@ const resolvers = {
       return await get('SELECT id, username, email, role, created_at FROM users WHERE id = ?', [id]);
     },
 
-    deleteUser: async (_, { id }) => {
+    deleteUser: async (_, { id }, context) => {
+      // Vérifier l'autorisation admin
+      await requireAdmin(context);
+      
       // Vérifier si l'utilisateur existe
       const existingUser = await get('SELECT * FROM users WHERE id = ?', [id]);
       if (!existingUser) {

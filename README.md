@@ -395,3 +395,235 @@ npm start
 ---
 
 **Développé avec ❤️ pour le cours de Services Web - GraphQL** 
+
+# 📚 Application de Gestion de Bibliothèque - GraphQL
+
+Application complète de gestion de bibliothèque utilisant GraphQL avec Node.js, Express, Apollo Server et SQLite.
+
+## 🚀 Installation et Démarrage
+
+### Prérequis
+- Node.js (version 14 ou supérieure)
+- npm ou yarn
+
+### Installation
+```bash
+# Cloner le projet
+git clone <url-du-repo>
+cd webservice
+
+# Installer les dépendances
+npm install
+
+# Initialiser la base de données
+npm run init-db
+
+# Démarrer le serveur
+npm start
+```
+
+### Accès
+- **Interface Web** : http://localhost:4000
+- **GraphQL Playground** : http://localhost:4000/graphql
+- **Documentation API** : http://localhost:4000/api
+
+## 🔐 Authentification et Autorisation
+
+### Utilisateurs de Test
+L'application inclut des utilisateurs de test pré-configurés :
+
+| Email | Mot de passe | Rôle |
+|-------|-------------|------|
+| `admin@bibliotheque.com` | `password123` | Admin |
+| `john@example.com` | `password123` | Utilisateur |
+| `jane@example.com` | `password123` | Utilisateur |
+
+### Mutations Protégées (Admin uniquement)
+Certaines mutations nécessitent une authentification admin :
+
+- `createUser` - Créer un nouvel utilisateur
+- `updateUser` - Modifier un utilisateur existant  
+- `deleteUser` - Supprimer un utilisateur
+
+### Utilisation avec Token Admin
+
+1. **Se connecter en tant qu'admin** :
+```graphql
+mutation {
+  login(input: {
+    email: "admin@bibliotheque.com"
+    password: "password123"
+  }) {
+    token
+    user {
+      id
+      username
+      role
+    }
+  }
+}
+```
+
+2. **Utiliser le token dans les en-têtes** :
+```bash
+# Dans GraphQL Playground ou client GraphQL
+Headers: {
+  "Authorization": "Bearer <votre-token-jwt>"
+}
+```
+
+3. **Créer un utilisateur (admin uniquement)** :
+```graphql
+mutation {
+  createUser(input: {
+    username: "nouveau_user"
+    email: "nouveau@example.com"
+    password: "motdepasse123"
+    role: "user"
+  }) {
+    id
+    username
+    email
+    role
+  }
+}
+```
+
+### Gestion des Erreurs d'Autorisation
+- **"Authentification requise"** : Token manquant ou invalide
+- **"Autorisation admin requise"** : Utilisateur connecté mais pas admin
+
+## 📊 Fonctionnalités
+
+### 🔍 Queries Disponibles
+- **Livres** : `books`, `book(id)`, `searchBooks(query)`, `booksByAuthor(authorId)`
+- **Auteurs** : `authors`, `author(id)`
+- **Utilisateurs** : `users`, `user(id)` (admin uniquement)
+- **Emprunts** : `loans`, `loan(id)`, `userLoans(userId)`, `activeLoans`
+
+### ✏️ Mutations Disponibles
+- **Authentification** : `register`, `login`
+- **Livres** : `createBook`, `updateBook`, `deleteBook`
+- **Auteurs** : `createAuthor`, `updateAuthor`, `deleteAuthor`
+- **Utilisateurs** : `createUser`, `updateUser`, `deleteUser` (admin uniquement)
+- **Emprunts** : `borrowBook`, `returnBook`
+
+## 🏗️ Architecture
+
+```
+Frontend (HTML/CSS/JS)
+    ↓
+Express.js Server (Port 4000)
+    ↓
+├── GraphQL API (/graphql)
+├── Static Files (/public)
+├── REST API (/api/me)
+└── Database (SQLite)
+```
+
+## 🔧 Technologies Utilisées
+
+- **Backend** : Node.js, Express.js, Apollo Server
+- **Base de données** : SQLite
+- **Authentification** : JWT (JSON Web Tokens)
+- **Sécurité** : bcryptjs, Helmet, CORS
+- **Frontend** : HTML5, CSS3, JavaScript vanilla
+
+## 📁 Structure du Projet
+
+```
+webservice/
+├── src/
+│   ├── server.js          # Serveur Express + Apollo
+│   ├── graphql/
+│   │   ├── schema.js      # Schéma GraphQL
+│   │   └── resolvers.js   # Résolveurs GraphQL
+│   └── database/
+│       ├── db.js          # Configuration DB
+│       └── init.js        # Initialisation DB
+├── public/
+│   ├── index.html         # Interface web
+│   ├── app.js            # Logique frontend
+│   └── styles.css        # Styles CSS
+├── database/
+│   └── bibliotheque.db   # Base de données SQLite
+└── package.json
+```
+
+## 🛡️ Sécurité
+
+- **Authentification JWT** : Tokens sécurisés avec expiration
+- **Hachage des mots de passe** : bcryptjs avec salt
+- **Autorisation par rôle** : Admin vs Utilisateur
+- **Protection des en-têtes** : Helmet.js
+- **CORS configuré** : Contrôle des requêtes cross-origin
+
+## 🚀 Déploiement
+
+### Variables d'Environnement
+```bash
+PORT=4000                    # Port du serveur
+JWT_SECRET=votre-secret      # Secret JWT (à changer en production)
+```
+
+### Production
+```bash
+# Build et démarrage
+npm start
+
+# Ou avec PM2
+npm install -g pm2
+pm2 start src/server.js --name "bibliotheque-graphql"
+```
+
+## 📝 Exemples d'Utilisation
+
+### Recherche de Livres
+```graphql
+query {
+  searchBooks(query: "Harry Potter") {
+    id
+    title
+    author {
+      name
+    }
+    available_copies
+  }
+}
+```
+
+### Emprunter un Livre
+```graphql
+mutation {
+  borrowBook(userId: "2", bookId: "1") {
+    id
+    book {
+      title
+    }
+    due_date
+  }
+}
+```
+
+### Retourner un Livre
+```graphql
+mutation {
+  returnBook(loanId: "1") {
+    id
+    return_date
+    status
+  }
+}
+```
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créer une branche feature (`git checkout -b feature/AmazingFeature`)
+3. Commit les changements (`git commit -m 'Add some AmazingFeature'`)
+4. Push vers la branche (`git push origin feature/AmazingFeature`)
+5. Ouvrir une Pull Request
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails. 

@@ -146,15 +146,14 @@ document.addEventListener('DOMContentLoaded', function() {
             if (authSection) {
                 authSection.classList.add('active');
                 authSection.style.display = 'block';
-                authSection.scrollIntoView({behavior: 'smooth'});
-            } else {
-                alert("Erreur : la section #auth n'existe pas dans le DOM !");
             }
             // Désactiver tous les liens actifs
             document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
             // Activer le lien Connexion si présent
             var navLink = document.querySelector('.nav-link[data-section="auth"]');
             if (navLink) navLink.classList.add('active');
+            // Toujours appeler showSection('auth') pour garantir la logique
+            showSection('auth');
         }
     });
 });
@@ -708,7 +707,7 @@ async function loadLoans() {
         const btn = document.getElementById('goToLoginBtn');
         if (btn) {
             btn.addEventListener('click', function() {
-                showSection('login');
+                showSection('auth'); // Correction ici, passer à 'auth' au lieu de 'login'
             });
         }
         return;
